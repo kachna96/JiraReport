@@ -1,43 +1,4 @@
 ﻿@page "/about"
 
-
-
-<MudTable Items="@Elements" Striped="true" Bordered="true" CustomFooter="true" Hover="true" MultiSelection="true" CanCancelEdit="true" @bind-SelectedItems="selectedItems1">
-    <HeaderContent>
-        <MudTh>Nr</MudTh>
-        <MudTh>Checkbox</MudTh>
-    </HeaderContent>
-    <RowTemplate>
-        <MudTd DataLabel="Nr">@context.Number</MudTd>
-        <MudTd DataLabel="Checkbox">@context.Checked</MudTd>
-    </RowTemplate>
-    <RowEditingTemplate>
-        <MudTd DataLabel="Nr">@context.Number</MudTd>
-        <MudTd DataLabel="Checkbox">
-            <MudCheckBox @bind-Checked="@context.Checked" Color="Color.Primary" />
-        </MudTd>
-    </RowEditingTemplate>
-    <FooterContent>
-        <MudTd colspan="5">Select All</MudTd>
-    </FooterContent>
-</MudTable>
-
-<MudTable Items="@Issues" Striped="true" Bordered="true" CustomFooter="true" Hover="true" MultiSelection="true" CanCancelEdit="true" @bind-SelectedItems="SelectedIssues">
-    <HeaderContent>
-        <MudTh>Nr</MudTh>
-        <MudTh>Checkbox</MudTh>
-    </HeaderContent>
-    <RowTemplate>
-        <MudTd DataLabel="Nr">@context.Project</MudTd>
-        <MudTd DataLabel="Checkbox">@context.Checked</MudTd>
-    </RowTemplate>
-    <RowEditingTemplate>
-        <MudTd DataLabel="Nr">@context.Project</MudTd>
-        <MudTd DataLabel="Checkbox">
-            <MudCheckBox @bind-Checked="@context.Checked" Color="Color.Primary" />
-        </MudTd>
-    </RowEditingTemplate>
-    <FooterContent>
-        <MudTd colspan="5">Select All</MudTd>
-    </FooterContent>
-</MudTable>
+<MudText>Ondrej Kacmar, @(DateTime.Now.Year)</MudText>
+<MudLink Href="https://github.com/kachna96/JiraReport" Target="_blank">Github</MudLink>

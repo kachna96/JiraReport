@@ -10,14 +10,33 @@ namespace JiraReport.Client.Store.JiraIssuesFilter
 			{
 				Name = action.Name,
 				ContractorId = action.ContractorId,
-				ReportedHours = action.ReportedHours,
 				HourRate = action.HourRate,
 				Residence = action.Residence,
-				RoundingDecimals = action.RoundingDecimals,
 				TaxId = action.TaxId,
 				DateRange = state.DateRange,
 				SelectedCurrency = action.Currency,
 				TotalPrice = action.TotalPrice
+			};
+
+		[ReducerMethod]
+		public static JiraIssuesFilterState ReduceJiraIssuesFilterActionSetHourRate(JiraIssuesFilterState state, JiraIssuesFilterSetHourRateAction action) =>
+			state with
+			{
+				HourRate = action.HourRate
+			};
+
+		[ReducerMethod]
+		public static JiraIssuesFilterState ReduceJiraIssuesFilterActionSetTotalPrice(JiraIssuesFilterState state, JiraIssuesFilterSetTotalPriceAction action) =>
+			state with
+			{
+				TotalPrice = action.TotalPrice
+			};
+
+		[ReducerMethod]
+		public static JiraIssuesFilterState ReduceJiraIssuesFilterActionSetDateRange(JiraIssuesFilterState state, JiraIssuesFilterSetDateRangeAction action) =>
+			state with
+			{
+				DateRange = action.DateRange
 			};
 	}
 }

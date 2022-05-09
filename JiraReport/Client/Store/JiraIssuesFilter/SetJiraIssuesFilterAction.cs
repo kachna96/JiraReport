@@ -10,24 +10,18 @@
 
 		public string Residence { get; }
 
-		public decimal ReportedHours { get; }
-
-		public int RoundingDecimals { get; }
-
 		public decimal HourRate { get; }
 
 		public decimal TotalPrice { get; }
 
 		public string Currency { get; }
 
-		public SetJiraIssuesFilterAction(string name, string contractorId, string taxId, string residence, decimal reportedHours, int roundingDecimals, decimal hourRate, decimal totalPrice, string currency)
+		public SetJiraIssuesFilterAction(string name, string contractorId, string taxId, string residence, decimal hourRate, decimal totalPrice, string currency)
 		{
 			Name = name;
 			ContractorId = contractorId;
 			TaxId = taxId;
 			Residence = residence;
-			ReportedHours = reportedHours;
-			RoundingDecimals = roundingDecimals;
 			HourRate = hourRate;
 			TotalPrice = totalPrice;
 			Currency = currency;

@@ -1,4 +1,5 @@
 ﻿@page "/"
+@using JiraReport.Shared
 @using TeixeiraSoftware.Finance
 @inherits Fluxor.Blazor.Web.Components.FluxorComponent
 
@@ -8,15 +9,13 @@
     <MudItem xs="12" sm="7">
         <MudPaper Class="pa-4">
             <MudForm @ref="form" @bind-IsValid="@success" @bind-Errors="@errors">
-                <MudDateRangePicker @bind-DateRange="JiraIssuesFilterState.Value.DateRange" Label="Date range" />
+                <MudDateRangePicker DateRangeChanged="DateRangeChanged" DateRange="JiraIssuesFilterState.Value.DateRange" Label="Date range" />
                 <MudTextField @bind-Value="JiraIssuesFilterState.Value.Name" T="string" Label="Name" Required="true" RequiredError="Contractor name is required!" />
                 <MudTextField @bind-Value="JiraIssuesFilterState.Value.ContractorId" T="string" Label="Contractor Id" Required="true" RequiredError="Contractor ID is required!" />
                 <MudTextField @bind-Value="JiraIssuesFilterState.Value.TaxId" T="string" Label="Tax Id" Required="true" RequiredError="Tax ID is required!" />
                 <MudTextField @bind-Value="JiraIssuesFilterState.Value.Residence" T="string" Label="Residence" Required="true" RequiredError="Residence is required!" />
-                <MudTextField @bind-Value="JiraIssuesFilterState.Value.ReportedHours" T="decimal" Label="Reported hours" Required="true" RequiredError="Amound of reported hours is required!" />
-                <MudTextField @bind-Value="JiraIssuesFilterState.Value.RoundingDecimals" T="int" Label="Hour rounding decimals" Required="true" RequiredError="Hour rounding decimals are required!" />
-                <MudTextField @bind-Value="JiraIssuesFilterState.Value.HourRate" T="decimal" Label="Hour rate" Required="true" RequiredError="Hour rate is required!" />
-                <MudTextField @bind-Value="JiraIssuesFilterState.Value.TotalPrice" T="decimal" Label="Total amount due" Required="true" RequiredError="Total amount due is required!" />
+                <MudTextField ValueChanged="HourRateValueChanged" Format="N2" Value="JiraIssuesFilterState.Value.HourRate" T="decimal" Label="Hour rate" Required="true" RequiredError="Hour rate is required!" Adornment="Adornment.Start" AdornmentText="@JiraIssuesFilterState.Value.SelectedCurrency" />
+                <MudTextField ValueChanged="TotalPriceValueChanged" Format="N2" Value="JiraIssuesFilterState.Value.TotalPrice" T="decimal" Label="Total amount due" Required="true" RequiredError="Total amount due is required!" Adornment="Adornment.Start" AdornmentText="@JiraIssuesFilterState.Value.SelectedCurrency" />
                 <MudSelect T="string" Label="Currency" @bind-Value="JiraIssuesFilterState.Value.SelectedCurrency" AnchorOrigin="Origin.BottomCenter">
                     @foreach (var item in JiraIssuesFilterState.Value.Currencies)
                     {
@@ -49,7 +48,7 @@
 }
 else if (JiraIssuesState.Value.Initialized)
 {
-    <MudTable Items="JiraIssuesState.Value.Issues" Striped="true" Bordered="true" CustomFooter="true" Hover="true" MultiSelection="true" @bind-SelectedItems="JiraIssuesState.Value.SelectedIssues" CanCancelEdit="true">
+    <MudTable T=JiraIssue RowEditCommit="ItemHasBeenCommitted" Items="JiraIssuesState.Value.Issues" Striped="true" Bordered="true" CustomFooter="true" Hover="true" MultiSelection="true" SelectedItemsChanged="SelectedItemsChanged" SelectedItems="JiraIssuesState.Value.SelectedIssues" CanCancelEdit="true">
         <HeaderContent>
             <MudTh>Project</MudTh>
             <MudTh>Key</MudTh>
@@ -65,16 +64,16 @@ else if (JiraIssuesState.Value.Initialized)
         </HeaderContent>
         <RowTemplate>
             <MudTd DataLabel="Project" Class="@GetTdClass(context.Key)">@context.Project</MudTd>
-            <MudTd DataLabel="Key" Class="@GetTdClass(context.Key)"><MudLink Href="@context.Uri.OriginalString" Target="_blank">@context.Key</MudLink></MudTd>
+            <MudTd DataLabel="Key" Class="@GetTdClass(context.Key)"><MudLink Href="@context.Uri.OriginalString" Target="_blank"><b>@context.Key</b></MudLink></MudTd>
             <MudTd DataLabel="Type" Class="@GetTdClass(context.Key)">@context.IssueType</MudTd>
-            <MudTd DataLabel="Summary" Class="@GetTdClass(context.Key)">@context.Summary</MudTd>
+            <MudTd DataLabel="Summary" Class="@GetTdClass(context.Key)"><b>@context.Summary</b></MudTd>
             <MudTd DataLabel="Status" Class="@GetTdClass(context.Key)">@context.Status</MudTd>
             <MudTd DataLabel="Reporter" Class="@GetTdClass(context.Key)">@context.Reporter</MudTd>
             <MudTd DataLabel="Seconds" Class="@GetTdClass(context.Key)">@context.TimeSpendInSeconds</MudTd>
             <MudTd DataLabel="Hours" Class="@GetTdClass(context.Key)">@context.TimeSpendInHours</MudTd>
-            <MudTd DataLabel="PaddedHours" Class="@GetTdClass(context.Key)">@(Math.Round(ExtraHours.FirstOrDefault(x => x.Key == context.Key).Hours, JiraIssuesFilterState.Value.RoundingDecimals))</MudTd>
+            <MudTd DataLabel="PaddedHours" Class="@GetTdClass(context.Key)"><b>@(Math.Round(ExtraHours.FirstOrDefault(x => x.Key == context.Key).Hours, 2))</b></MudTd>
             <MudTd DataLabel="Price" Class="@GetTdClass(context.Key)">
-                @(Math.Round((ExtraHours.FirstOrDefault(x => x.Key == context.Key).Hours) * (double)JiraIssuesFilterState.Value.HourRate, JiraIssuesFilterState.Value.RoundingDecimals))
+                <b>@(String.Format("{0:N2}", (ExtraHours.FirstOrDefault(x => x.Key == context.Key).Hours) * (double)JiraIssuesFilterState.Value.HourRate))</b>
             </MudTd>
             <MudTd DataLabel="Bonus" Class="@GetTdClass(context.Key)"><MudCheckBox @bind-Checked="@context.Checked" Disabled="@(!JiraIssuesState.Value.SelectedIssues.Any(x => x.Key == context.Key))" Color="Color.Primary" /></MudTd>
         </RowTemplate>
@@ -86,9 +85,9 @@ else if (JiraIssuesState.Value.Initialized)
             <MudTd DataLabel="Status" Class="@GetTdClass(context.Key)">@context.Status</MudTd>
             <MudTd DataLabel="Reporter" Class="@GetTdClass(context.Key)">@context.Reporter</MudTd>
             <MudTd DataLabel="Seconds" Class="@GetTdClass(context.Key)">@context.TimeSpendInSeconds</MudTd>
-            <MudTd DataLabel="Hours" Class="@GetTdClass(context.Key)"><MudNumericField @bind-Value="context.TimeSpendInHours" Min="0" /></MudTd>
-            <MudTd DataLabel="PaddedHours" Class="@GetTdClass(context.Key)">@(Math.Round(ExtraHours.FirstOrDefault(x => x.Key == context.Key).Hours, JiraIssuesFilterState.Value.RoundingDecimals))</MudTd>
-            <MudTd DataLabel="Price" Class="@GetTdClass(context.Key)">@(Math.Round(context.TimeSpendInHours * (double)JiraIssuesFilterState.Value.HourRate, JiraIssuesFilterState.Value.RoundingDecimals))</MudTd>
+            <MudTd DataLabel="Hours" Class="@GetTdClass(context.Key)"><MudNumericField T="double" @bind-Value="context.TimeSpendInHours" Min="0" /></MudTd>
+            <MudTd DataLabel="PaddedHours" Class="@GetTdClass(context.Key)">@(Math.Round(ExtraHours.FirstOrDefault(x => x.Key == context.Key).Hours, 2))</MudTd>
+            <MudTd DataLabel="Price" Class="@GetTdClass(context.Key)">@(String.Format("{0:N2}", context.TimeSpendInHours * (double)JiraIssuesFilterState.Value.HourRate))</MudTd>
             <MudTd DataLabel="Bonus"><MudCheckBox @bind-Checked="@context.Checked" Disabled="@(!JiraIssuesState.Value.SelectedIssues.Any(x => x.Key == context.Key))" Color="Color.Primary" /></MudTd>
         </RowEditingTemplate>
         <FooterContent>
@@ -99,14 +98,14 @@ else if (JiraIssuesState.Value.Initialized)
                 <MudTd></MudTd>
                 <MudTd></MudTd>
                 <MudTd></MudTd>
-                <MudTd><b>@(JiraIssuesState.Value.SelectedIssues.Sum(x => x.TimeSpendInSeconds))</b>s</MudTd>
-                <MudTd><b>@(Math.Round(JiraIssuesState.Value.SelectedIssues.Sum(x => x.TimeSpendInHours), JiraIssuesFilterState.Value.RoundingDecimals))</b>h</MudTd>
-                <MudTd><b>@(Math.Round(JiraIssuesState.Value.SelectedIssues.Sum(x => ExtraHours.FirstOrDefault(e => e.Key == x.Key).Hours), JiraIssuesFilterState.Value.RoundingDecimals))</b>h</MudTd>
+                <MudTd>@(JiraIssuesState.Value.SelectedIssues.Sum(x => x.TimeSpendInSeconds))s</MudTd>
+                <MudTd>@(JiraIssuesState.Value.SelectedIssues.Sum(x => x.TimeSpendInHours))h</MudTd>
+                <MudTd><b>@(Math.Round(JiraIssuesState.Value.SelectedIssues.Sum(x => ExtraHours.FirstOrDefault(e => e.Key == x.Key).Hours), 2))</b>h</MudTd>
                 <MudTd>
-                    <b>@(Math.Round(JiraIssuesState.Value.SelectedIssues.Sum(x => (ExtraHours.FirstOrDefault(e => e.Key == x.Key).Hours) * (double)JiraIssuesFilterState.Value.HourRate), JiraIssuesFilterState.Value.RoundingDecimals))</b>
+                    <b>@(String.Format("{0:N2}", JiraIssuesState.Value.SelectedIssues.Sum(x => (ExtraHours.FirstOrDefault(e => e.Key == x.Key).Hours) * (double)JiraIssuesFilterState.Value.HourRate)))</b>
                     @JiraIssuesFilterState.Value.SelectedCurrency
                 </MudTd>
-                <MudTd><MudNumericField @bind-Value="BonusValue" Label="Bonus" Variant="Variant.Text" Adornment="Adornment.End" AdornmentText="@JiraIssuesFilterState.Value.SelectedCurrency" Min="0" /></MudTd>
+                <MudTd><MudNumericField @bind-Value="JiraIssuesState.Value.BonusValue" Format="N2" Label="Bonus" Variant="Variant.Text" Adornment="Adornment.Start" AdornmentText="@JiraIssuesFilterState.Value.SelectedCurrency" Min="0" /></MudTd>
             </MudTFootRow>
         </FooterContent>
     </MudTable>
