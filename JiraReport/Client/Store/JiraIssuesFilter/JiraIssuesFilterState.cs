@@ -19,7 +19,13 @@ namespace JiraReport.Client.Store.JiraIssuesFilter
 
 		public decimal HourRate { get; set; }
 
+		public decimal BonusInAdvance { get; set; }
+
+		public decimal OtherPayments { get; set; }
+
 		public decimal TotalPrice { get; set; }
+
+		public decimal ReportedHours { get; set; }
 
 		public IReadOnlyCollection<Currency> Currencies { get; } = Currency.AllCurrencies;
 

@@ -12,13 +12,33 @@ namespace JiraReport.Client.Store.JiraIssuesFilter
 		}
 	}
 
-	public class JiraIssuesFilterSetTotalPriceAction
+	public class JiraIssuesFilterSetBonusInAdvanceAction
 	{
-		public decimal TotalPrice { get; }
+		public decimal BonusInAdvance { get; }
 
-		public JiraIssuesFilterSetTotalPriceAction(decimal totalPrice)
+		public JiraIssuesFilterSetBonusInAdvanceAction(decimal bonusInAdvance)
 		{
-			TotalPrice = totalPrice;
+			BonusInAdvance = bonusInAdvance;
+		}
+	}
+
+	public class JiraIssuesFilterSetOtherPaymentsAction
+	{
+		public decimal OtherPayments { get; }
+
+		public JiraIssuesFilterSetOtherPaymentsAction(decimal otherPayments)
+		{
+			OtherPayments = otherPayments;
+		}
+	}
+
+	public class JiraIssuesFilterSetReportedHoursAction
+	{
+		public decimal ReportedHours { get; }
+
+		public JiraIssuesFilterSetReportedHoursAction(decimal reportedHours)
+		{
+			ReportedHours = reportedHours;
 		}
 	}
 

@@ -12,19 +12,25 @@
 
 		public decimal HourRate { get; }
 
-		public decimal TotalPrice { get; }
+		public decimal BonusInAdvance { get; }
+
+		public decimal OtherPayments { get; }
 
 		public string Currency { get; }
 
-		public SetJiraIssuesFilterAction(string name, string contractorId, string taxId, string residence, decimal hourRate, decimal totalPrice, string currency)
+		public decimal ReportedHours { get; }
+
+		public SetJiraIssuesFilterAction(string name, string contractorId, string taxId, string residence, decimal hourRate, decimal bonusInAdvance, decimal otherPayments, string currency, decimal reportedHours)
 		{
 			Name = name;
 			ContractorId = contractorId;
 			TaxId = taxId;
 			Residence = residence;
 			HourRate = hourRate;
-			TotalPrice = totalPrice;
+			BonusInAdvance = bonusInAdvance;
+			OtherPayments = otherPayments;
 			Currency = currency;
+			ReportedHours = reportedHours;
 		}
 	}
 }

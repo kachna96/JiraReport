@@ -4,6 +4,7 @@ using JiraReport.Client.Store.JiraIssues;
 using JiraReport.Client.Store.JiraIssuesFilter;
 using JiraReport.Shared;
 using Microsoft.AspNetCore.Components;
+using Microsoft.JSInterop;
 using MudBlazor;
 
 namespace JiraReport.Client.Pages
@@ -78,7 +79,9 @@ namespace JiraReport.Client.Pages
 			await LocalStorage.SetItemAsync(nameof(JiraIssuesFilterState.Value.TaxId), JiraIssuesFilterState.Value.TaxId);
 			await LocalStorage.SetItemAsync(nameof(JiraIssuesFilterState.Value.Residence), JiraIssuesFilterState.Value.Residence);
 			await LocalStorage.SetItemAsync(nameof(JiraIssuesFilterState.Value.HourRate), JiraIssuesFilterState.Value.HourRate);
-			await LocalStorage.SetItemAsync(nameof(JiraIssuesFilterState.Value.TotalPrice), JiraIssuesFilterState.Value.TotalPrice);
+			await LocalStorage.SetItemAsync(nameof(JiraIssuesFilterState.Value.BonusInAdvance), JiraIssuesFilterState.Value.BonusInAdvance);
+			await LocalStorage.SetItemAsync(nameof(JiraIssuesFilterState.Value.OtherPayments), JiraIssuesFilterState.Value.OtherPayments);
+			await LocalStorage.SetItemAsync(nameof(JiraIssuesFilterState.Value.ReportedHours), JiraIssuesFilterState.Value.ReportedHours);
 			await LocalStorage.SetItemAsync(nameof(JiraIssuesFilterState.Value.SelectedCurrency), JiraIssuesFilterState.Value.SelectedCurrency);
 			Snackbar.Add("Values saved to Local Storage.", Severity.Success);
 		}
@@ -90,10 +93,12 @@ namespace JiraReport.Client.Pages
 			var taxId = await LocalStorage.GetItemAsync<string>(nameof(JiraIssuesFilterState.Value.TaxId));
 			var residence = await LocalStorage.GetItemAsync<string>(nameof(JiraIssuesFilterState.Value.Residence));
 			var hourRate = await LocalStorage.GetItemAsync<decimal>(nameof(JiraIssuesFilterState.Value.HourRate));
-			var totalPrice = await LocalStorage.GetItemAsync<decimal>(nameof(JiraIssuesFilterState.Value.TotalPrice));
+			var bonusInAdvance = await LocalStorage.GetItemAsync<decimal>(nameof(JiraIssuesFilterState.Value.BonusInAdvance));
+			var otherPayments = await LocalStorage.GetItemAsync<decimal>(nameof(JiraIssuesFilterState.Value.OtherPayments));
+			var reportedHours = await LocalStorage.GetItemAsync<decimal>(nameof(JiraIssuesFilterState.Value.ReportedHours));
 			var currency = await LocalStorage.GetItemAsync<string>(nameof(JiraIssuesFilterState.Value.SelectedCurrency));
 
-			Dispatcher.Dispatch(new SetJiraIssuesFilterAction(name, contractorId, taxId, residence, hourRate, totalPrice, currency));
+			Dispatcher.Dispatch(new SetJiraIssuesFilterAction(name, contractorId, taxId, residence, hourRate, bonusInAdvance, otherPayments, currency, reportedHours));
 		}
 
 		private void CalculateHourMultiplier()
@@ -139,9 +144,19 @@ namespace JiraReport.Client.Pages
 			Dispatcher.Dispatch(new JiraIssuesFilterSetHourRateAction(value));
 		}
 
-		private void TotalPriceValueChanged(decimal value)
+		private void BonusInAdvanceValueChanged(decimal value)
 		{
-			Dispatcher.Dispatch(new JiraIssuesFilterSetTotalPriceAction(value));
+			Dispatcher.Dispatch(new JiraIssuesFilterSetBonusInAdvanceAction(value));
+		}
+
+		private void OtherPaymentsValueChanged(decimal value)
+		{
+			Dispatcher.Dispatch(new JiraIssuesFilterSetOtherPaymentsAction(value));
+		}
+
+		private void ReportedHoursValueChanged(decimal value)
+		{
+			Dispatcher.Dispatch(new JiraIssuesFilterSetReportedHoursAction(value));
 		}
 
 		private void SelectedItemsChanged(HashSet<JiraIssue> jiraIssues)

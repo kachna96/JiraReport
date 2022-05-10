@@ -15,21 +15,42 @@ namespace JiraReport.Client.Store.JiraIssuesFilter
 				TaxId = action.TaxId,
 				DateRange = state.DateRange,
 				SelectedCurrency = action.Currency,
-				TotalPrice = action.TotalPrice
+				TotalPrice = action.HourRate * action.ReportedHours + action.BonusInAdvance + action.OtherPayments,
+				BonusInAdvance = action.BonusInAdvance,
+				OtherPayments = action.OtherPayments,
+				ReportedHours = action.ReportedHours
 			};
 
 		[ReducerMethod]
 		public static JiraIssuesFilterState ReduceJiraIssuesFilterActionSetHourRate(JiraIssuesFilterState state, JiraIssuesFilterSetHourRateAction action) =>
 			state with
 			{
-				HourRate = action.HourRate
+				HourRate = action.HourRate,
+				TotalPrice = action.HourRate * state.ReportedHours + state.BonusInAdvance + state.OtherPayments
 			};
 
 		[ReducerMethod]
-		public static JiraIssuesFilterState ReduceJiraIssuesFilterActionSetTotalPrice(JiraIssuesFilterState state, JiraIssuesFilterSetTotalPriceAction action) =>
+		public static JiraIssuesFilterState ReduceJiraIssuesFilterActionSetBonusInAdvance(JiraIssuesFilterState state, JiraIssuesFilterSetBonusInAdvanceAction action) =>
 			state with
 			{
-				TotalPrice = action.TotalPrice
+				BonusInAdvance = action.BonusInAdvance,
+				TotalPrice = state.HourRate * state.ReportedHours + action.BonusInAdvance + state.OtherPayments
+			};
+
+		[ReducerMethod]
+		public static JiraIssuesFilterState ReduceJiraIssuesFilterActionSetOtherPayments(JiraIssuesFilterState state, JiraIssuesFilterSetOtherPaymentsAction action) =>
+			state with
+			{
+				OtherPayments = action.OtherPayments,
+				TotalPrice = state.HourRate * state.ReportedHours + state.BonusInAdvance + action.OtherPayments
+			};
+
+		[ReducerMethod]
+		public static JiraIssuesFilterState ReduceJiraIssuesFilterActionSetReportedHours(JiraIssuesFilterState state, JiraIssuesFilterSetReportedHoursAction action) =>
+			state with
+			{
+				ReportedHours = action.ReportedHours,
+				TotalPrice = state.HourRate * action.ReportedHours + state.BonusInAdvance + state.OtherPayments
 			};
 
 		[ReducerMethod]
