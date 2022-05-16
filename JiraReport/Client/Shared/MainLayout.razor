@@ -1,15 +1,15 @@
 ﻿@inherits LayoutComponentBase
-
+@*@bind-IsDarkMode="@_isDarkMode"*@
 <MudThemeProvider @ref="@_mudThemeProvider" @bind-IsDarkMode="@_isDarkMode" />
 <MudDialogProvider/>
 <MudSnackbarProvider/>
 
 <MudLayout>
-    <MudAppBar Elevation="1">
+    <MudAppBar Elevation="1" Class="d-print-none">
         <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@((e) => DrawerToggle())" />
         <MudText Typo="Typo.h5" Class="ml-3">Jira Report</MudText>
     </MudAppBar>
-    <MudDrawer @bind-Open="@_drawerOpen" ClipMode="DrawerClipMode.Always" Elevation="2">
+    <MudDrawer @bind-Open="@_drawerOpen" ClipMode="DrawerClipMode.Always" Elevation="2" Class="d-print-none">
         <NavMenu />
     </MudDrawer>
     <MudMainContent>

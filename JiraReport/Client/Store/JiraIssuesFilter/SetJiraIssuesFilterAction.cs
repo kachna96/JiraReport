@@ -20,7 +20,9 @@
 
 		public decimal ReportedHours { get; }
 
-		public SetJiraIssuesFilterAction(string name, string contractorId, string taxId, string residence, decimal hourRate, decimal bonusInAdvance, decimal otherPayments, string currency, decimal reportedHours)
+		public string Language { get; }
+
+		public SetJiraIssuesFilterAction(string name, string contractorId, string taxId, string residence, decimal hourRate, decimal bonusInAdvance, decimal otherPayments, string currency, decimal reportedHours, string language)
 		{
 			Name = name;
 			ContractorId = contractorId;
@@ -31,6 +33,7 @@
 			OtherPayments = otherPayments;
 			Currency = currency;
 			ReportedHours = reportedHours;
+			Language = language;
 		}
 	}
 }

@@ -67,3 +67,40 @@ a, .btn-link {
   text-decoration: line-through;
   color: var(--mud-palette-text-disabled)!important;
 }
+
+#mud-table-dense-no-padding {
+  padding: 6px 0 6px 0;
+  padding-inline-start: 0;
+  padding-inline-end: 0;
+}
+
+@media print {
+  * {
+    background-color: white;
+    color: black;
+  }
+  .pa-4 {
+    padding: 0 !important;
+  }
+  .mud-paper {
+    background-color: white !important;
+    border-radius: 0 !important;
+  }
+  .mud-elevation-1 {
+    box-shadow: unset !important;
+  }
+  .mud-table-root .mud-table-body .mud-table-cell {
+    color: black !important;
+  }
+  .mud-table-root .mud-table-head .mud-table-cell {
+    color: black !important;
+  }
+  .mud-table-cell {
+    border-bottom: 1px solid grey !important;
+  }
+  .col-print-12 {
+    max-width: 100% !important;
+    width: 100% !important;
+    flex: 0 0 100% !important;
+  }
+}

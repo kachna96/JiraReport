@@ -40,15 +40,5 @@
 		{
 			Uri = new Uri(baseUri, $"browse/{Key}");
 		}
-
-		//public double GetTimeSpendInHours(IEnumerable<(string Key, double Hours)> extraHours)
-		//{
-		//	var entry = extraHours.FirstOrDefault(x => x.Key == Key);
-
-		//	if (entry == null)
-		//	{
-		//		return TimeSpendInHours;
-		//	}
-		//}
 	}
 }

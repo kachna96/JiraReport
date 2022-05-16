@@ -16,28 +16,11 @@
 			if (sum == 0)
 				throw new ArgumentException("Weights must not sum to 0", nameof(weights));
 
-			static double round(double x) => x >= 0 ? x + 0.5 : x - 0.5;
-
-			double diff = 0;
-
 			for (var i = 0; i < weights.Count(); ++i)
 			{
-				double v = count * (weights.ElementAt(i).hours) / sum;
-				double value = round(v);
-				diff += v - value;
+				var v = count * (weights.ElementAt(i).hours) / sum;
 
-				if (diff >= 0.5)
-				{
-					value += 1;
-					diff -= 1;
-				}
-				else if (diff <= -0.5)
-				{
-					value -= 1;
-					diff += 1;
-				}
-
-				result.Add((weights.ElementAt(i).key, value));
+				result.Add((weights.ElementAt(i).key, v));
 			}
 
 			return result;

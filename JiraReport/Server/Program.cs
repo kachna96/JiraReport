@@ -1,5 +1,6 @@
 using Atlassian.Jira.AspNetCore;
 using JiraReport.Server.Options;
+using JiraReport.Shared;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -8,6 +9,9 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
 builder.Services.AddAutoMapper(typeof(Program).Assembly);
+var translationCollection = new ReportTranslationCollection();
+builder.Configuration.Bind(translationCollection);
+builder.Services.AddSingleton(translationCollection);
 var jiraOptions = new JiraConfigurationOptions();
 var jiraOptionsSection = builder.Configuration.GetSection(JiraConfigurationOptions.Section);
 builder.Services.Configure<JiraConfigurationOptions>(jiraOptionsSection);

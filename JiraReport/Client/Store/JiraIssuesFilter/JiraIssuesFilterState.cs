@@ -17,7 +17,7 @@ namespace JiraReport.Client.Store.JiraIssuesFilter
 
 		public string Residence { get; set; }
 
-		public decimal HourRate { get; set; }
+		public decimal HourRate { get; set; } = 1;
 
 		public decimal BonusInAdvance { get; set; }
 
@@ -25,11 +25,13 @@ namespace JiraReport.Client.Store.JiraIssuesFilter
 
 		public decimal TotalPrice { get; set; }
 
-		public decimal ReportedHours { get; set; }
+		public decimal ReportedHours { get; set; } = 1;
 
 		public IReadOnlyCollection<Currency> Currencies { get; } = Currency.AllCurrencies;
 
 		public string SelectedCurrency { get; set; }
+
+		public string Language { get; set; }
 
 		public JiraIssuesFilterState()
 		{
@@ -37,6 +39,17 @@ namespace JiraReport.Client.Store.JiraIssuesFilter
 			var startDate = currentDate.AddMonths(-1).AddDays(1 - currentDate.Day);
 			var endDate = startDate.AddMonths(1).AddDays(-1);
 			DateRange = new DateRange(startDate, endDate);
+		}
+
+		public bool IsFilled()
+		{
+			return !string.IsNullOrEmpty(Name)
+				&& !string.IsNullOrEmpty(ContractorId)
+				&& !string.IsNullOrEmpty(TaxId)
+				&& !string.IsNullOrEmpty(Residence)
+				&& !string.IsNullOrEmpty(SelectedCurrency)
+				&& HourRate > 0
+				&& ReportedHours > 0;				
 		}
 	}
 }

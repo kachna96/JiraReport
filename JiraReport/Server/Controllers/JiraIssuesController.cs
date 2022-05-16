@@ -15,12 +15,14 @@ namespace JiraReport.Server.Controllers
 		private readonly IIssueService _issueService;
 		private readonly IMapper _mapper;
 		private readonly IOptionsMonitor<JiraConfigurationOptions> _jiraOptions;
+		private readonly ReportTranslationCollection _reportTranslationCollection;
 
-		public JiraIssuesController(IIssueService issueService, IMapper mapper, IOptionsMonitor<JiraConfigurationOptions> jiraOptions)
+		public JiraIssuesController(IIssueService issueService, IMapper mapper, IOptionsMonitor<JiraConfigurationOptions> jiraOptions, ReportTranslationCollection reportTranslationCollection)
 		{
 			_issueService = issueService;
 			_mapper = mapper;
 			_jiraOptions = jiraOptions;
+			_reportTranslationCollection = reportTranslationCollection;
 		}
 
 		[HttpGet]
@@ -50,6 +52,13 @@ namespace JiraReport.Server.Controllers
 			}
 
 			return _mapper.Map<JiraIssueCollection>(resultIssues);
+		}
+
+		[HttpGet("translations")]
+		[ProducesResponseType(typeof(ReportTranslationCollection), 200)]
+		public ReportTranslationCollection GetTranslations()
+		{
+			return _reportTranslationCollection;
 		}
 	}
 }
