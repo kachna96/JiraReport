@@ -1,4 +1,8 @@
-﻿using MudBlazor;
+﻿using Fluxor;
+using JiraReport.Client.Store.Exceptions;
+using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Routing;
+using MudBlazor;
 
 namespace JiraReport.Client.Shared
 {
@@ -7,6 +11,15 @@ namespace JiraReport.Client.Shared
         private bool _isDarkMode;
         private MudThemeProvider _mudThemeProvider;
 
+        [Inject]
+        private IState<ExceptionsState> ExceptionsState { get; set; }
+
+        [Inject]
+        private IDispatcher Dispatcher { get; set; }
+
+        [Inject]
+        private NavigationManager NavigationManager { get; set; }
+
         protected override async Task OnAfterRenderAsync(bool firstRender)
         {
             if (firstRender)
@@ -14,6 +27,35 @@ namespace JiraReport.Client.Shared
                 _isDarkMode = await _mudThemeProvider.GetSystemPreference();
                 StateHasChanged();
             }
+
+            ExceptionsState.StateChanged += OnExceptionStateChanged;
+            NavigationManager.LocationChanged += OnLocationChanged;
+        }
+
+        private void OnLocationChanged(object _1, LocationChangedEventArgs _2)
+        {
+            if (ExceptionsState.Value.Exceptions.Count == 0)
+            {
+                return;
+            }
+
+            Dispatcher.Dispatch(new ResetExceptionsAction());
+        }
+
+        private void OnExceptionStateChanged(object _1, EventArgs _2)
+        {
+            StateHasChanged();
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                ExceptionsState.StateChanged -= OnExceptionStateChanged;
+                NavigationManager.LocationChanged -= OnLocationChanged;
+            }
+
+            base.Dispose(disposing);
         }
     }
 }

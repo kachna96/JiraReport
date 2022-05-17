@@ -1,4 +1,4 @@
-﻿@inherits LayoutComponentBase
+﻿@inherits Fluxor.Blazor.Web.Components.FluxorLayout
 <MudThemeProvider @ref="@_mudThemeProvider" @bind-IsDarkMode="@_isDarkMode" />
 <MudDialogProvider/>
 <MudSnackbarProvider/>
@@ -13,7 +13,26 @@
     </MudDrawer>
     <MudMainContent>
         <MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-5 mb-5">
-            @Body
+            @if (ExceptionsState.Value.Exceptions.Any())
+            {
+                @foreach (var item in ExceptionsState.Value.Exceptions)
+                {
+                    <MudAlert Severity="Severity.Error">@item.Message</MudAlert>
+                    <MudAlert Severity="Severity.Error">@item.StackTrace</MudAlert>
+                }
+            }
+            else
+            {
+                <ErrorBoundary>
+                    <ChildContent>
+                        @Body
+                    </ChildContent>
+                    <ErrorContent Context="ex">
+                        <MudAlert>@ex.Message</MudAlert>
+                        <MudAlert>@ex.StackTrace</MudAlert>
+                    </ErrorContent>
+                </ErrorBoundary>
+            }
         </MudContainer>
     </MudMainContent>
 </MudLayout>
