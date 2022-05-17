@@ -95,8 +95,14 @@ a, .btn-link {
   .mud-table-root .mud-table-head .mud-table-cell {
     color: black !important;
   }
-  .mud-table-cell {
+  .mud-table-head .mud-table-cell {
     border-bottom: 1px solid grey !important;
+  }
+  .mud-table-foot .mud-table-cell {
+    border-top: 2px solid grey !important;
+  }
+  .mud-table-body .mud-table-cell {
+    border-bottom: 1px solid beige !important;
   }
   .col-print-12 {
     max-width: 100% !important;
