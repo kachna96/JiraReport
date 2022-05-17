@@ -27,11 +27,16 @@ namespace JiraReport.Server.Controllers
 
 		[HttpGet]
 		[ProducesResponseType(typeof(JiraIssueCollection), 200)]
-		public async Task<JiraIssueCollection> Get(DateTime from, DateTime to, CancellationToken cancellationToken = default)
+		public async Task<JiraIssueCollection> Get(string from, string to, CancellationToken cancellationToken = default)
 		{
+			if (!DateTime.TryParse(from, out DateTime fromDate) || !DateTime.TryParse(to, out DateTime toDate))
+			{
+				throw new ArgumentException("Date time is not in correct format");
+			}
+
 			var resultIssues = new List<JiraIssue>();
 			var issues = await _issueService.GetIssuesFromJqlAsync(
-				$"worklogAuthor = '{_jiraOptions.CurrentValue.Username}' and worklogDate >= '{from.ToString("yyyy/MM/dd", CultureInfo.InvariantCulture)}' and worklogDate <= '{to.ToString("yyyy/MM/dd", CultureInfo.InvariantCulture)}'",
+				$"worklogAuthor = '{_jiraOptions.CurrentValue.Username}' and worklogDate >= '{fromDate.ToString("yyyy/MM/dd", CultureInfo.InvariantCulture)}' and worklogDate <= '{toDate.ToString("yyyy/MM/dd", CultureInfo.InvariantCulture)}'",
 				token: cancellationToken);
 
 			foreach (var issue in issues)
@@ -39,8 +44,8 @@ namespace JiraReport.Server.Controllers
 				var worklog = await issue.GetWorklogsAsync(cancellationToken);
 				var secondsSpendSum = worklog
 					.Where(x => x.Author == _jiraOptions.CurrentValue.Username)
-					.Where(x => x.StartDate >= from)
-					.Where(x => x.StartDate <= to)
+					.Where(x => x.StartDate >= fromDate)
+					.Where(x => x.StartDate <= toDate)
 					.Sum(x => x.TimeSpentInSeconds);
 
 				var mappedIssue = _mapper.Map<JiraIssue>(issue);
