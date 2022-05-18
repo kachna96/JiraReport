@@ -29,7 +29,8 @@ namespace JiraReport.Server.Controllers
 		[ProducesResponseType(typeof(JiraIssueCollection), 200)]
 		public async Task<JiraIssueCollection> Get(string from, string to, CancellationToken cancellationToken = default)
 		{
-			if (!DateTime.TryParse(from, out DateTime fromDate) || !DateTime.TryParse(to, out DateTime toDate))
+			if (!DateTime.TryParseExact(from, "yyyy/MM/dd", CultureInfo.InvariantCulture, DateTimeStyles.AdjustToUniversal, out DateTime fromDate) || 
+				!DateTime.TryParseExact(to, "yyyy/MM/dd", CultureInfo.InvariantCulture, DateTimeStyles.AdjustToUniversal, out DateTime toDate))
 			{
 				throw new ArgumentException("Date time is not in correct format");
 			}

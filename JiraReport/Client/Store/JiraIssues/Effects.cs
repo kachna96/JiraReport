@@ -2,6 +2,7 @@
 using JiraReport.Client.Aspects;
 using JiraReport.Client.Store.Exceptions;
 using JiraReport.Shared;
+using System.Globalization;
 using System.Net.Http.Json;
 
 namespace JiraReport.Client.Store.JiraIssues
@@ -21,7 +22,8 @@ namespace JiraReport.Client.Store.JiraIssues
         [ExceptionStateBind]
         public async Task HandleFetchDataAction(FetchJiraIssuesAction action, IDispatcher dispatcher)
         {
-            var issueCollection = await _httpClient.GetFromJsonAsync<JiraIssueCollection>($"api/jiraissues?from={action.From}&to={action.To}");
+            var issueCollection = await _httpClient.GetFromJsonAsync<JiraIssueCollection>(
+                $"api/jiraissues?from={action.From.ToString("yyyy/MM/dd", CultureInfo.InvariantCulture)}&to={action.To.ToString("yyyy/MM/dd", CultureInfo.InvariantCulture)}");
             dispatcher.Dispatch(new FetchJiraIssuesResultAction(issueCollection));
         }
 
