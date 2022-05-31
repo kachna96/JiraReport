@@ -138,8 +138,7 @@ namespace JiraReport.Client.Pages
             }
 
             ExtraHours = new();
-            var totalHours = JiraIssuesFilterState.Value.TotalPrice / JiraIssuesFilterState.Value.HourRate;
-            var reportedHours = JiraIssuesState.Value.SelectedIssues.Sum(x => x.TimeSpendInHours);
+            var totalHours = Math.Round(JiraIssuesFilterState.Value.TotalPrice / JiraIssuesFilterState.Value.HourRate, 2);
             var buckets = HourRandomizer.SplitIntoBuckets((double)totalHours, JiraIssuesState.Value.SelectedIssues.Select(x => (x.Key, x.TimeSpendInHours)));
 
             double roundedHour = 0;
