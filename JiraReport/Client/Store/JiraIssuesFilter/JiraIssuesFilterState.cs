@@ -35,9 +35,9 @@ namespace JiraReport.Client.Store.JiraIssuesFilter
 
 		public JiraIssuesFilterState()
 		{
-			var currentDate = DateTime.Now;
-			var startDate = currentDate.AddMonths(-1).AddDays(1 - currentDate.Day);
-			var endDate = startDate.AddMonths(1).AddDays(-1);
+			var month = new DateTime(DateTime.Today.Year, DateTime.Today.Month, 1);
+			var startDate = month.AddMonths(-1);
+			var endDate = month.AddDays(-1);
 			DateRange = new DateRange(startDate, endDate);
 		}
 
