@@ -21,7 +21,7 @@ namespace JiraReport.Client.Store.Translations
         [ExceptionStateBind]
         public async Task HandleFetchDataAction(FetchTranslationsAction _, IDispatcher dispatcher)
         {
-            var issueCollection = await _httpClient.GetFromJsonAsync<ReportTranslationCollection>($"api/jiraissues/translations");
+            var issueCollection = await _httpClient.GetFromJsonAsync<ReportTranslationCollection>("api/jiraissues/translations");
             dispatcher.Dispatch(new FetchTranslationsResultAction(issueCollection));
         }
 
