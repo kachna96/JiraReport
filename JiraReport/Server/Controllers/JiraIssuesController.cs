@@ -29,7 +29,7 @@ namespace JiraReport.Server.Controllers
 		[ProducesResponseType(typeof(JiraIssueCollection), 200)]
 		public async Task<JiraIssueCollection> Get(string from, string to, CancellationToken cancellationToken = default)
 		{
-			if (!DateTime.TryParseExact(from, "yyyy/MM/dd", CultureInfo.InvariantCulture, DateTimeStyles.AdjustToUniversal, out DateTime fromDate) || 
+			if (!DateTime.TryParseExact(from, "yyyy/MM/dd", CultureInfo.InvariantCulture, DateTimeStyles.AdjustToUniversal, out DateTime fromDate) ||
 				!DateTime.TryParseExact(to, "yyyy/MM/dd", CultureInfo.InvariantCulture, DateTimeStyles.AdjustToUniversal, out DateTime toDate))
 			{
 				throw new ArgumentException("Date time is not in correct format");
@@ -38,6 +38,7 @@ namespace JiraReport.Server.Controllers
 			var resultIssues = new List<JiraIssue>();
 			var issues = await _issueService.GetIssuesFromJqlAsync(
 				$"worklogAuthor = '{_jiraOptions.CurrentValue.Username}' and worklogDate >= '{fromDate.ToString("yyyy/MM/dd", CultureInfo.InvariantCulture)}' and worklogDate <= '{toDate.ToString("yyyy/MM/dd", CultureInfo.InvariantCulture)}'",
+				maxIssues: 100,
 				token: cancellationToken);
 
 			foreach (var issue in issues)

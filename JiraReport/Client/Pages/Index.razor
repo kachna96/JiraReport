@@ -15,7 +15,7 @@
     else if (JiraIssuesState.Value.Initialized)
     {
         <MudText Typo="Typo.h5" Class="mud-typography-align-center py-3">Workbench</MudText>
-        <MudTable Class="d-print-none" T=JiraIssue RowEditCommit="ItemHasBeenCommitted" Items="JiraIssuesState.Value.Issues" Striped="true" Bordered="false" CustomFooter="true" Hover="true" MultiSelection="true" SelectedItemsChanged="SelectedItemsChanged" SelectedItems="JiraIssuesState.Value.SelectedIssues" CanCancelEdit="true">
+        <MudTable Class="d-print-none" T=JiraIssue RowEditCommit="ItemHasBeenCommitted" Items="JiraIssuesState.Value.Issues" Striped="false" Bordered="false" CustomFooter="true" Hover="true" MultiSelection="true" SelectedItemsChanged="SelectedItemsChanged" SelectedItems="JiraIssuesState.Value.SelectedIssues" CanCancelEdit="true">
             <HeaderContent>
                 <MudTh>Project</MudTh>
                 <MudTh>Key</MudTh>
