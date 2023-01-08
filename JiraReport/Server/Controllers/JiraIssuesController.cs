@@ -46,8 +46,8 @@ namespace JiraReport.Server.Controllers
 				var worklog = await issue.GetWorklogsAsync(cancellationToken);
 				var secondsSpendSum = worklog
 					.Where(x => x.Author == _jiraOptions.CurrentValue.Username)
-					.Where(x => x.StartDate >= fromDate)
-					.Where(x => x.StartDate <= toDate)
+					.Where(x => x.StartDate.Value.Date >= fromDate)
+					.Where(x => x.StartDate.Value.Date <= toDate)
 					.Sum(x => x.TimeSpentInSeconds);
 
 				var mappedIssue = _mapper.Map<JiraIssue>(issue);
