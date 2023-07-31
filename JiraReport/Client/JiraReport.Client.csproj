@@ -8,12 +8,12 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="AspectInjector" Version="2.8.1" />
+    <PackageReference Include="AspectInjector" Version="2.8.2" />
     <PackageReference Include="Blazored.LocalStorage" Version="4.3.0" />
-    <PackageReference Include="Fluxor.Blazor.Web" Version="5.7.0" />
-    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="7.0.5" />
-    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="7.0.5" PrivateAssets="all" />
-    <PackageReference Include="MudBlazor" Version="6.2.2" />
+    <PackageReference Include="Fluxor.Blazor.Web" Version="5.9.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="7.0.9" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="7.0.9" PrivateAssets="all" />
+    <PackageReference Include="MudBlazor" Version="6.7.0" />
 	<PackageReference Include="TeixeiraSoftware.Finance.Currency" Version="4.1.0" />
   </ItemGroup>
 
