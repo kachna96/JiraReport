@@ -1,10 +1,10 @@
-﻿using Atlassian.Jira;
+﻿using System.Globalization;
+using Atlassian.Jira;
 using AutoMapper;
 using JiraReport.Server.Options;
 using JiraReport.Shared;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
-using System.Globalization;
 
 namespace JiraReport.Server.Controllers
 {
