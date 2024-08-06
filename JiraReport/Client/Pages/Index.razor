@@ -15,7 +15,7 @@
     else if (JiraIssuesState.Value.Initialized)
     {
         <MudText Typo="Typo.h5" Class="mud-typography-align-center py-3">Workbench</MudText>
-        <MudTable Class="d-print-none" T=JiraIssue RowEditCommit="ItemHasBeenCommitted" Items="JiraIssuesState.Value.Issues" Striped="false" Bordered="false" CustomFooter="true" Hover="true" MultiSelection="true" SelectedItemsChanged="SelectedItemsChanged" SelectedItems="JiraIssuesState.Value.SelectedIssues" CanCancelEdit="true">
+        <MudTable Class="d-print-none" T="JiraIssue" RowEditCommit="ItemHasBeenCommitted" Items="JiraIssuesState.Value.Issues" Striped="false" Bordered="false" CustomFooter="true" Hover="true" MultiSelection="true" SelectedItemsChanged="SelectedItemsChanged" SelectedItems="JiraIssuesState.Value.SelectedIssues" CanCancelEdit="true">
             <HeaderContent>
                 <MudTh>Project</MudTh>
                 <MudTh>Key</MudTh>
@@ -40,7 +40,7 @@
                 <MudTd DataLabel="Price" Class="@GetTdClass(context.Key)">
                     @JiraIssuesFilterState.Value.SelectedCurrency @(String.Format("{0:N2}", (ExtraHours.FirstOrDefault(x => x.Key == context.Key).Hours) * (double)JiraIssuesFilterState.Value.HourRate))
                 </MudTd>
-                <MudTd DataLabel="Bonus" Class="@GetTdClass(context.Key)"><MudCheckBox @bind-Checked="@context.Checked" Disabled="@(!JiraIssuesState.Value.SelectedIssues.Any(x => x.Key == context.Key))" Color="Color.Primary" /></MudTd>
+                <MudTd DataLabel="Bonus" Class="@GetTdClass(context.Key)"><MudCheckBox @bind-Value="@context.Checked" Disabled="@(!JiraIssuesState.Value.SelectedIssues.Any(x => x.Key == context.Key))" Color="Color.Primary" /></MudTd>
             </RowTemplate>
             <RowEditingTemplate>
                 <MudTd DataLabel="Project" Class="@GetTdClass(context.Key)">@context.Project</MudTd>
@@ -52,7 +52,7 @@
                 <MudTd DataLabel="Hours" Class="@GetTdClass(context.Key)"><MudNumericField T="double" @bind-Value="context.TimeSpendInHours" Min="0" AdornmentText="h" Adornment="Adornment.End" /></MudTd>
                 <MudTd DataLabel="PaddedHours" Class="@GetTdClass(context.Key)">@(Math.Round(ExtraHours.FirstOrDefault(x => x.Key == context.Key).Hours, 2))h</MudTd>
                 <MudTd DataLabel="Price" Class="@GetTdClass(context.Key)">@JiraIssuesFilterState.Value.SelectedCurrency @(String.Format("{0:N2}", context.TimeSpendInHours * (double)JiraIssuesFilterState.Value.HourRate))</MudTd>
-                <MudTd DataLabel="Bonus"><MudCheckBox @bind-Checked="@context.Checked" Disabled="@(!JiraIssuesState.Value.SelectedIssues.Any(x => x.Key == context.Key))" Color="Color.Primary" /></MudTd>
+                <MudTd DataLabel="Bonus"><MudCheckBox @bind-Value="@context.Checked" Disabled="@(!JiraIssuesState.Value.SelectedIssues.Any(x => x.Key == context.Key))" Color="Color.Primary" /></MudTd>
             </RowEditingTemplate>
             <FooterContent>
                 <MudTFootRow>
@@ -123,58 +123,48 @@
             else if (!string.IsNullOrWhiteSpace(JiraIssuesFilterState.Value.Language))
             {
                 var translation = TranslationState.Value.TranslationCollection.Translations.Single(x => x.Language == JiraIssuesFilterState.Value.Language);
-                <MudText Typo="Typo.h5" Class="mud-typography-align-center mb-3"><b>@(translation.Headline)</b></MudText>
-                <MudGrid Class="align-items-center">
-                    <MudItem xs="3">
+                <MudText Typo="Typo.h5" Class="mud-typography-align-center"><b>@(translation.Headline)</b></MudText>
+                <MudGrid Class="mt-5">
+                    <MudItem xs="3" Class="py-1">
                         <MudText>@(translation.Name):</MudText>
                     </MudItem>
-                    <MudItem xs="9">
+                    <MudItem xs="9" Class="py-1">
                         <MudText>@JiraIssuesFilterState.Value.Name</MudText>
                     </MudItem>
-                </MudGrid>
-                <MudGrid Class="align-items-center">
-                    <MudItem xs="3">
+                    <MudItem xs="3" Class="py-1">
                         <MudText>@(translation.ContractorId):</MudText>
                     </MudItem>
-                    <MudItem xs="9">
+                    <MudItem xs="9" Class="py-1">
                         <MudText>@JiraIssuesFilterState.Value.ContractorId</MudText>
                     </MudItem>
-                </MudGrid>
-                <MudGrid Class="align-items-center">
-                    <MudItem xs="3">
+                    <MudItem xs="3" Class="py-1">
                         <MudText>@(translation.TaxId):</MudText>
                     </MudItem>
-                    <MudItem xs="9">
+                    <MudItem xs="9" Class="py-1">
                         <MudText>@JiraIssuesFilterState.Value.TaxId</MudText>
                     </MudItem>
-                </MudGrid>
-                <MudGrid Class="align-items-center">
-                    <MudItem xs="3">
+                    <MudItem xs="3" Class="py-1">
                         <MudText>@(translation.Residence):</MudText>
                     </MudItem>
-                    <MudItem xs="9">
+                    <MudItem xs="9" Class="py-1">
                         <MudText>@JiraIssuesFilterState.Value.Residence</MudText>
                     </MudItem>
-                </MudGrid>
-                @if (JiraIssuesFilterState.Value.DateRange.Start.HasValue && JiraIssuesFilterState.Value.DateRange.End.HasValue)
-                {
-                    <MudGrid Class="align-items-center">
-                        <MudItem xs="3">
+                    @if (JiraIssuesFilterState.Value.DateRange.Start.HasValue && JiraIssuesFilterState.Value.DateRange.End.HasValue)
+                    {
+                        <MudItem xs="3" Class="py-1">
                             <MudText>@(translation.BillingPeriod):</MudText>
                         </MudItem>
-                        <MudItem xs="9">
+                        <MudItem xs="9" Class="py-1">
                             <MudText>
                                 @(JiraIssuesFilterState.Value.DateRange.Start.Value.Day).@(JiraIssuesFilterState.Value.DateRange.Start.Value.Month).@(JiraIssuesFilterState.Value.DateRange.Start.Value.Year)
                                 - @(JiraIssuesFilterState.Value.DateRange.End.Value.Day).@(JiraIssuesFilterState.Value.DateRange.End.Value.Month).@(JiraIssuesFilterState.Value.DateRange.End.Value.Year)
                             </MudText>
                         </MudItem>
-                    </MudGrid>
-                }
-                <MudGrid Class="align-items-center">
-                    <MudItem xs="3">
+                    }
+                    <MudItem xs="3" Class="py-1">
                         <MudText>@(translation.BillingPeriodHourRate):</MudText>
                     </MudItem>
-                    <MudItem xs="9">
+                    <MudItem xs="9" Class="py-1">
                         <MudText>@JiraIssuesFilterState.Value.HourRate @JiraIssuesFilterState.Value.SelectedCurrency/h</MudText>
                     </MudItem>
                 </MudGrid>

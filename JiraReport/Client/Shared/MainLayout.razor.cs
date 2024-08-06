@@ -3,6 +3,7 @@ using JiraReport.Client.Store.Exceptions;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Routing;
 using MudBlazor;
+using MudBlazor.Interfaces;
 
 namespace JiraReport.Client.Shared
 {
@@ -44,10 +45,10 @@ namespace JiraReport.Client.Shared
 
         private void OnExceptionStateChanged(object _1, EventArgs _2)
         {
-            StateHasChanged();
+            (this as IMudStateHasChanged)?.StateHasChanged();
         }
 
-        protected override void Dispose(bool disposing)
+        protected override async ValueTask DisposeAsyncCore(bool disposing)
         {
             if (disposing)
             {
@@ -55,7 +56,7 @@ namespace JiraReport.Client.Shared
                 NavigationManager.LocationChanged -= OnLocationChanged;
             }
 
-            base.Dispose(disposing);
+            await base.DisposeAsyncCore(disposing);
         }
     }
 }

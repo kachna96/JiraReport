@@ -208,11 +208,11 @@ namespace JiraReport.Client.Pages
             await JSRuntime.InvokeVoidAsync("print");
         }
 
-        protected override void Dispose(bool disposing)
+        protected override async ValueTask DisposeAsyncCore(bool disposing)
         {
             JiraIssuesState.StateChanged -= JiraIssuesState_StateChanged;
             JiraIssuesFilterState.StateChanged -= JiraIssuesFilterState_StateChanged;
-            base.Dispose(disposing);
+            await base.DisposeAsyncCore(disposing);
         }
     }
 }
