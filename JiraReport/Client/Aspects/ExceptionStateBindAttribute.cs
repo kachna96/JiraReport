@@ -1,5 +1,5 @@
-﻿using AspectInjector.Broker;
-using System.Reflection;
+﻿using System.Reflection;
+using AspectInjector.Broker;
 
 namespace JiraReport.Client.Aspects
 {
@@ -19,15 +19,8 @@ namespace JiraReport.Client.Aspects
             [Argument(Source.ReturnType)] Type retType
             )
         {
-            if (instance is null)
-            {
-                throw new ArgumentNullException(nameof(instance));
-            }
-
-            if (retType is null)
-            {
-                throw new ArgumentNullException(nameof(retType));
-            }
+            ArgumentNullException.ThrowIfNull(instance);
+            ArgumentNullException.ThrowIfNull(retType);
 
             if (instance is not IExceptionStateLogger logger)
             {
@@ -37,12 +30,12 @@ namespace JiraReport.Client.Aspects
             if (typeof(Task).IsAssignableFrom(retType))
             {
                 var syncResultType = retType.IsConstructedGenericType ? retType.GenericTypeArguments[0] : _voidTaskResult;
-                return _asyncHandler.MakeGenericMethod(syncResultType).Invoke(this, new object[] { target, args, logger });
+                return _asyncHandler.MakeGenericMethod(syncResultType).Invoke(this, [target, args, logger]);
             }
             else
             {
                 retType = retType == typeof(void) ? typeof(object) : retType;
-                return _syncHandler.MakeGenericMethod(retType).Invoke(this, new object[] { target, args, logger });
+                return _syncHandler.MakeGenericMethod(retType).Invoke(this, [target, args, logger]);
             }
         }
 

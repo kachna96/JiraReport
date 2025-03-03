@@ -16,7 +16,7 @@ namespace JiraReport.Client.Pages
         bool firstValidation = true;
         MudForm form;
 
-        private List<(string Key, double Hours)> ExtraHours { get; set; } = new();
+        private List<(string Key, double Hours)> ExtraHours { get; set; } = [];
 
         [Inject]
         private IState<JiraIssuesState> JiraIssuesState { get; set; }
@@ -127,7 +127,7 @@ namespace JiraReport.Client.Pages
             var currency = await LocalStorage.GetItemAsync<string>(nameof(JiraIssuesFilterState.Value.SelectedCurrency));
             var language = await LocalStorage.GetItemAsync<string>(nameof(JiraIssuesFilterState.Value.Language));
 
-            Dispatcher.Dispatch(new SetJiraIssuesFilterAction(name, contractorId, taxId, residence, hourRate, bonusInAdvance, otherPayments, currency, reportedHours, language));
+            Dispatcher.Dispatch(new SetJiraIssuesFilterAction(name!, contractorId!, taxId!, residence!, hourRate, bonusInAdvance, otherPayments, currency!, reportedHours, language));
         }
 
         private void CalculateHourMultiplier()
@@ -137,11 +137,12 @@ namespace JiraReport.Client.Pages
                 return;
             }
 
-            ExtraHours = new();
+            ExtraHours = [];
             var totalHours = Math.Round(JiraIssuesFilterState.Value.TotalPrice / JiraIssuesFilterState.Value.HourRate, 2);
             var buckets = HourRandomizer.SplitIntoBuckets((double)totalHours, JiraIssuesState.Value.SelectedIssues.Select(x => (x.Key, x.TimeSpendInHours)));
 
             double roundedHour = 0;
+
             foreach (var (key, hours) in buckets)
             {
                 if (key == buckets.Last().key)
