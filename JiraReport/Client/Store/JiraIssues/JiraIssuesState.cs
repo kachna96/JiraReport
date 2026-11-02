@@ -1,4 +1,4 @@
-﻿using Fluxor;
+using Fluxor;
 using JiraReport.Shared;
 
 namespace JiraReport.Client.Store.JiraIssues
@@ -10,25 +10,27 @@ namespace JiraReport.Client.Store.JiraIssues
 
         public HashSet<JiraIssue> SelectedIssues { get; set; } = new HashSet<JiraIssue>();
 
-        public long TotalTimeSpendInSeconds { get; }
+        public long TotalTimeSpendInSeconds { get; init; }
 
         public TimeSpan TotalTime { get; init; }
 
         public bool Loading { get; init; } = false;
 
-        public bool Initialized => Issues.Any();
+        public bool Initialized { get; init; } = false;
 
         public decimal BonusValue { get; set; }
 
         private JiraIssuesState() { }
 
-        public JiraIssuesState(IEnumerable<JiraIssue> jiraIssues, long totalTimeSpendInSeconds, TimeSpan totalTime, bool loading)
+        public JiraIssuesState(IEnumerable<JiraIssue> jiraIssues, long totalTimeSpendInSeconds, TimeSpan totalTime, bool loading, bool initialized = true)
         {
-            Issues = jiraIssues;
-            SelectedIssues = jiraIssues.ToHashSet();
+            var list = jiraIssues as IReadOnlyList<JiraIssue> ?? jiraIssues.ToList();
+            Issues = list;
+            SelectedIssues = list.ToHashSet();
             TotalTimeSpendInSeconds = totalTimeSpendInSeconds;
             TotalTime = totalTime;
             Loading = loading;
+            Initialized = initialized;
         }
     }
 }

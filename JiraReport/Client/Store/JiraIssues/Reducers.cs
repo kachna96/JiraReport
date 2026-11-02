@@ -39,10 +39,14 @@ namespace JiraReport.Client.Store.JiraIssues
 				selected[selectedIndex] = action.JiraIssue;
 			}
 
+			var totalSeconds = list.Sum(x => x.TimeSpendInSeconds);
+
 			return state with
 			{
 				Issues = list,
-				SelectedIssues = selected.ToHashSet()
+				SelectedIssues = selected.ToHashSet(),
+				TotalTimeSpendInSeconds = totalSeconds,
+				TotalTime = TimeSpan.FromSeconds(totalSeconds)
 			};
 		}
 	}

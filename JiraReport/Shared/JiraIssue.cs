@@ -1,20 +1,20 @@
-﻿namespace JiraReport.Shared
+namespace JiraReport.Shared
 {
     public class JiraIssue
     {
-        public string Description { get; init; }
+        public string Description { get; init; } = string.Empty;
 
-        public string Project { get; init; }
+        public string Project { get; init; } = string.Empty;
 
-        public string Key { get; init; }
+        public string Key { get; init; } = string.Empty;
 
-        public string Reporter { get; init; }
+        public string Reporter { get; init; } = string.Empty;
 
-        public string Summary { get; init; }
+        public string Summary { get; init; } = string.Empty;
 
-        public string Status { get; init; }
+        public string Status { get; init; } = string.Empty;
 
-        public string IssueType { get; init; }
+        public string IssueType { get; init; } = string.Empty;
 
         public long TimeSpendInSeconds { get; set; }
 
@@ -29,16 +29,19 @@
             set
             {
                 TimeSpend = TimeSpan.FromHours(value);
+                TimeSpendInSeconds = (long)Math.Round(TimeSpend.TotalSeconds);
             }
         }
 
-        public Uri Uri { get; set; }
+        public Uri? Uri { get; set; }
 
         public bool Checked { get; set; }
 
         public void SetUri(Uri baseUri)
         {
-            Uri = new Uri(baseUri, $"browse/{Key}");
+            ArgumentNullException.ThrowIfNull(baseUri);
+            var baseStr = baseUri.OriginalString.TrimEnd('/');
+            Uri = new Uri($"{baseStr}/browse/{Key}");
         }
     }
 }

@@ -1,4 +1,4 @@
-﻿using Fluxor;
+using Fluxor;
 using TeixeiraSoftware.Finance;
 
 namespace JiraReport.Client.Store.JiraIssuesFilter
@@ -6,30 +6,38 @@ namespace JiraReport.Client.Store.JiraIssuesFilter
 	public static class Reducers
 	{
 		[ReducerMethod]
-		public static JiraIssuesFilterState ReduceSetJiraIssuesFilterAction(JiraIssuesFilterState state, SetJiraIssuesFilterAction action) =>
-			state with
+		public static JiraIssuesFilterState ReduceSetJiraIssuesFilterAction(JiraIssuesFilterState state, SetJiraIssuesFilterAction action)
+		{
+			var hourRate = action.HourRate > 0 ? action.HourRate : 1;
+			var reportedHours = action.ReportedHours > 0 ? action.ReportedHours : 1;
+
+			return state with
 			{
 				Name = action.Name,
 				ContractorId = action.ContractorId,
-				HourRate = action.HourRate > 0 ? action.HourRate : 1,
+				HourRate = hourRate,
 				Residence = action.Residence,
 				TaxId = action.TaxId,
 				DateRange = state.DateRange,
 				SelectedCurrency = string.IsNullOrEmpty(action.Currency) ? Currency.CZK.Symbol : action.Currency,
-				TotalPrice = action.HourRate * action.ReportedHours + action.BonusInAdvance + action.OtherPayments,
+				TotalPrice = hourRate * reportedHours + action.BonusInAdvance + action.OtherPayments,
 				BonusInAdvance = action.BonusInAdvance,
 				OtherPayments = action.OtherPayments,
-				ReportedHours = action.ReportedHours > 0 ? action.ReportedHours : 1,
+				ReportedHours = reportedHours,
 				Language = string.IsNullOrEmpty(action.Language) ? "CZ" : action.Language
 			};
+		}
 
 		[ReducerMethod]
-		public static JiraIssuesFilterState ReduceJiraIssuesFilterActionSetHourRate(JiraIssuesFilterState state, JiraIssuesFilterSetHourRateAction action) =>
-			state with
+		public static JiraIssuesFilterState ReduceJiraIssuesFilterActionSetHourRate(JiraIssuesFilterState state, JiraIssuesFilterSetHourRateAction action)
+		{
+			var hourRate = action.HourRate > 0 ? action.HourRate : 1;
+			return state with
 			{
-				HourRate = action.HourRate > 0 ? action.HourRate : 1,
-				TotalPrice = action.HourRate * state.ReportedHours + state.BonusInAdvance + state.OtherPayments
+				HourRate = hourRate,
+				TotalPrice = hourRate * state.ReportedHours + state.BonusInAdvance + state.OtherPayments
 			};
+		}
 
 		[ReducerMethod]
 		public static JiraIssuesFilterState ReduceJiraIssuesFilterActionSetBonusInAdvance(JiraIssuesFilterState state, JiraIssuesFilterSetBonusInAdvanceAction action) =>
@@ -48,12 +56,15 @@ namespace JiraReport.Client.Store.JiraIssuesFilter
 			};
 
 		[ReducerMethod]
-		public static JiraIssuesFilterState ReduceJiraIssuesFilterActionSetReportedHours(JiraIssuesFilterState state, JiraIssuesFilterSetReportedHoursAction action) =>
-			state with
+		public static JiraIssuesFilterState ReduceJiraIssuesFilterActionSetReportedHours(JiraIssuesFilterState state, JiraIssuesFilterSetReportedHoursAction action)
+		{
+			var reportedHours = action.ReportedHours > 0 ? action.ReportedHours : 1;
+			return state with
 			{
-				ReportedHours = action.ReportedHours > 0 ? action.ReportedHours : 1,
-				TotalPrice = state.HourRate * action.ReportedHours + state.BonusInAdvance + state.OtherPayments
+				ReportedHours = reportedHours,
+				TotalPrice = state.HourRate * reportedHours + state.BonusInAdvance + state.OtherPayments
 			};
+		}
 
 		[ReducerMethod]
 		public static JiraIssuesFilterState ReduceJiraIssuesFilterActionSetDateRange(JiraIssuesFilterState state, JiraIssuesFilterSetDateRangeAction action) =>

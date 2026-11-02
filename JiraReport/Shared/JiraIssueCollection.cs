@@ -1,8 +1,8 @@
-﻿namespace JiraReport.Shared
+namespace JiraReport.Shared
 {
     public record JiraIssueCollection
     {
-        public IEnumerable<JiraIssue> Issues { get; init; }
+        public IEnumerable<JiraIssue> Issues { get; init; } = [];
 
         public long TotalTimeSpendInSeconds { get; init; }
 

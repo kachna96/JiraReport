@@ -47,7 +47,6 @@ namespace JiraReport.Client.Shared
 
                 StateHasChanged();
 
-                ExceptionsState.StateChanged += OnExceptionStateChanged;
                 NavigationManager.LocationChanged += OnLocationChanged;
             }
         }
@@ -78,16 +77,10 @@ namespace JiraReport.Client.Shared
             Dispatcher.Dispatch(new ResetExceptionsAction());
         }
 
-        private void OnExceptionStateChanged(object? _1, EventArgs _2)
-        {
-            (this as IMudStateHasChanged)?.StateHasChanged();
-        }
-
         protected override async ValueTask DisposeAsyncCore(bool disposing)
         {
             if (disposing)
             {
-                ExceptionsState.StateChanged -= OnExceptionStateChanged;
                 NavigationManager.LocationChanged -= OnLocationChanged;
             }
 

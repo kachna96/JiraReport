@@ -1,20 +1,20 @@
-﻿namespace JiraReport.Shared
+namespace JiraReport.Shared
 {
     public class ReportTranslation
     {
-        public string BillingPeriod { get; set; }
-        public string BillingPeriodHourRate { get; set; }
-        public string ContractorId { get; set; }
-        public string Headline { get; set; }
-        public string Language { get; set; }
-        public string Name { get; set; }
-        public string OrderName { get; set; }
-        public string OrderNumber { get; set; }
-        public string Residence { get; set; }
-        public string TaxId { get; set; }
-        public string TimeSpentOnOrder { get; set; }
-        public string Total { get; set; }
-        public string TotalCostOfOrder { get; set; }
-        public string Bonus { get; set; }
+        public string BillingPeriod { get; set; } = string.Empty;
+        public string BillingPeriodHourRate { get; set; } = string.Empty;
+        public string ContractorId { get; set; } = string.Empty;
+        public string Headline { get; set; } = string.Empty;
+        public string Language { get; set; } = string.Empty;
+        public string Name { get; set; } = string.Empty;
+        public string OrderName { get; set; } = string.Empty;
+        public string OrderNumber { get; set; } = string.Empty;
+        public string Residence { get; set; } = string.Empty;
+        public string TaxId { get; set; } = string.Empty;
+        public string TimeSpentOnOrder { get; set; } = string.Empty;
+        public string Total { get; set; } = string.Empty;
+        public string TotalCostOfOrder { get; set; } = string.Empty;
+        public string Bonus { get; set; } = string.Empty;
     }
 }

@@ -1,4 +1,4 @@
-﻿using Fluxor;
+using Fluxor;
 using MudBlazor;
 using TeixeiraSoftware.Finance;
 
@@ -9,13 +9,13 @@ namespace JiraReport.Client.Store.JiraIssuesFilter
 	{
 		public DateRange DateRange { get; set; }
 
-		public string Name { get; set; }
+		public string Name { get; set; } = string.Empty;
 
-		public string ContractorId { get; set; }
+		public string ContractorId { get; set; } = string.Empty;
 
-		public string TaxId { get; set; }
+		public string TaxId { get; set; } = string.Empty;
 
-		public string Residence { get; set; }
+		public string Residence { get; set; } = string.Empty;
 
 		public decimal HourRate { get; set; } = 1;
 
@@ -23,15 +23,15 @@ namespace JiraReport.Client.Store.JiraIssuesFilter
 
 		public decimal OtherPayments { get; set; }
 
-		public decimal TotalPrice { get; set; }
+		public decimal TotalPrice { get; set; } = 1;
 
 		public decimal ReportedHours { get; set; } = 1;
 
 		public IReadOnlyCollection<Currency> Currencies { get; } = Currency.AllCurrencies;
 
-		public string SelectedCurrency { get; set; }
+		public string SelectedCurrency { get; set; } = string.Empty;
 
-		public string Language { get; set; }
+		public string Language { get; set; } = "CZ";
 
 		public JiraIssuesFilterState()
 		{
@@ -49,7 +49,7 @@ namespace JiraReport.Client.Store.JiraIssuesFilter
 				&& !string.IsNullOrEmpty(Residence)
 				&& !string.IsNullOrEmpty(SelectedCurrency)
 				&& HourRate > 0
-				&& ReportedHours > 0;				
+				&& ReportedHours > 0;
 		}
 	}
 }

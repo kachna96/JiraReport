@@ -28,17 +28,23 @@ namespace JiraReport.Server.Controllers
 		[ProducesResponseType(typeof(string), 400)]
 		public async Task<ActionResult<JiraIssueCollection>> Get(string from, string to, CancellationToken cancellationToken = default)
 		{
-			if (!DateTime.TryParseExact(from, "yyyy/MM/dd", CultureInfo.InvariantCulture, DateTimeStyles.AdjustToUniversal, out DateTime fromDate) ||
-				!DateTime.TryParseExact(to, "yyyy/MM/dd", CultureInfo.InvariantCulture, DateTimeStyles.AdjustToUniversal, out DateTime toDate))
+			if (!DateTime.TryParseExact(from, "yyyy/MM/dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime fromDate) ||
+				!DateTime.TryParseExact(to, "yyyy/MM/dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime toDate))
 			{
 				return BadRequest("Date time is not in correct format. Expected format: yyyy/MM/dd");
 			}
 
-			var username = _jiraOptions.CurrentValue.Username;
+			if (fromDate.Date > toDate.Date)
+			{
+				return BadRequest("'from' date must not be later than 'to' date.");
+			}
+
+			var username = _jiraOptions.CurrentValue.Username ?? string.Empty;
+			var escapedUsername = username.Replace("\\", "\\\\").Replace("'", "\\'");
 			var baseUri = _jiraOptions.CurrentValue.BaseUri;
 
 			var issues = await _issueService.GetIssuesFromJqlAsync(
-				$"worklogAuthor = '{username}' and worklogDate >= '{fromDate.ToString("yyyy/MM/dd", CultureInfo.InvariantCulture)}' and worklogDate <= '{toDate.ToString("yyyy/MM/dd", CultureInfo.InvariantCulture)}'",
+				$"worklogAuthor = '{escapedUsername}' and worklogDate >= '{fromDate.ToString("yyyy/MM/dd", CultureInfo.InvariantCulture)}' and worklogDate <= '{toDate.ToString("yyyy/MM/dd", CultureInfo.InvariantCulture)}'",
 				maxIssues: 500,
 				token: cancellationToken);
 
@@ -50,7 +56,9 @@ namespace JiraReport.Server.Controllers
 				{
 					var worklog = await issue.GetWorklogsAsync(cancellationToken);
 					var secondsSpendSum = worklog
-						.Where(x => string.Equals(x.Author, username, StringComparison.OrdinalIgnoreCase))
+						.Where(x => string.Equals(x.Author, username, StringComparison.OrdinalIgnoreCase)
+							|| string.Equals(x.AuthorUser?.Username, username, StringComparison.OrdinalIgnoreCase)
+							|| string.Equals(x.AuthorUser?.Email, username, StringComparison.OrdinalIgnoreCase))
 						.Where(x => x.StartDate.HasValue && x.StartDate.Value.Date >= fromDate.Date && x.StartDate.Value.Date <= toDate.Date)
 						.Sum(x => x.TimeSpentInSeconds);
 
@@ -71,7 +79,7 @@ namespace JiraReport.Server.Controllers
 			});
 
 			var resultIssues = await Task.WhenAll(tasks);
-			return Ok(resultIssues.ToCollection());
+			return Ok(resultIssues.Where(x => x.TimeSpendInSeconds > 0).ToCollection());
 		}
 
 		[HttpGet("translations")]

@@ -16,8 +16,10 @@ namespace JiraReport.Client.Pages
         bool firstValidation = true;
         MudForm? form;
 
-        private List<(string Key, double Hours)> ExtraHours { get; set; } = [];
-        private Dictionary<string, double> ExtraHoursDict { get; set; } = new();
+        private Dictionary<string, decimal> _extraHoursDict = new();
+        private HashSet<string> _selectedKeys = new();
+        private decimal _totalPaddedHours;
+        private (double TimeSpendInHours, bool Checked) _editBackup;
 
         [Inject]
         private IState<JiraIssuesState> JiraIssuesState { get; set; } = null!;
@@ -76,20 +78,25 @@ namespace JiraReport.Client.Pages
 
         private void FetchJiraIssuesAsync()
         {
-            Dispatcher.Dispatch(new FetchJiraIssuesSetLoadingAction(true));
-            Dispatcher.Dispatch(new FetchJiraIssuesAction(
-                JiraIssuesFilterState.Value.DateRange.Start.GetValueOrDefault(),
-                JiraIssuesFilterState.Value.DateRange.End.GetValueOrDefault()));
-        }
-
-        private string GetTdClass(string key)
-        {
-            if (JiraIssuesState.Value.SelectedIssues.Any(x => x.Key == key))
+            var start = JiraIssuesFilterState.Value.DateRange.Start;
+            var end = JiraIssuesFilterState.Value.DateRange.End;
+            if (!start.HasValue || !end.HasValue)
             {
-                return string.Empty;
+                return;
             }
 
-            return "strike-through";
+            Dispatcher.Dispatch(new FetchJiraIssuesSetLoadingAction(true));
+            Dispatcher.Dispatch(new FetchJiraIssuesAction(start.Value, end.Value));
+        }
+
+        private bool IsIssueSelected(string? key)
+        {
+            return !string.IsNullOrEmpty(key) && _selectedKeys.Contains(key);
+        }
+
+        private string GetTdClass(string? key)
+        {
+            return IsIssueSelected(key) ? string.Empty : "strike-through";
         }
 
         private string GetBonusClass()
@@ -105,55 +112,84 @@ namespace JiraReport.Client.Pages
         public double GetExtraHours(string? key)
         {
             if (string.IsNullOrEmpty(key)) return 0;
-            return ExtraHoursDict.TryGetValue(key, out var hours) ? hours : 0;
+            return _extraHoursDict.TryGetValue(key, out var hours) ? (double)hours : 0;
+        }
+
+        public decimal GetExtraPrice(string? key)
+        {
+            if (string.IsNullOrEmpty(key) || !_extraHoursDict.TryGetValue(key, out var hours))
+            {
+                return 0m;
+            }
+
+            return Math.Round(hours * JiraIssuesFilterState.Value.HourRate, 2, MidpointRounding.AwayFromZero);
         }
 
         public double GetTotalPaddedHours()
         {
-            var selected = JiraIssuesState.Value.SelectedIssues;
-            if (selected == null || !selected.Any()) return 0;
-            return Math.Round(selected.Sum(x => GetExtraHours(x.Key)), 2);
+            return (double)_totalPaddedHours;
+        }
+
+        public decimal GetTotalPrice()
+        {
+            return Math.Round(_totalPaddedHours * JiraIssuesFilterState.Value.HourRate, 2, MidpointRounding.AwayFromZero);
         }
 
         private async Task SaveFiltersToLocalStorageAsync()
         {
-            await LocalStorage.SetItemAsync(nameof(JiraIssuesFilterState.Value.Name), JiraIssuesFilterState.Value.Name);
-            await LocalStorage.SetItemAsync(nameof(JiraIssuesFilterState.Value.ContractorId), JiraIssuesFilterState.Value.ContractorId);
-            await LocalStorage.SetItemAsync(nameof(JiraIssuesFilterState.Value.TaxId), JiraIssuesFilterState.Value.TaxId);
-            await LocalStorage.SetItemAsync(nameof(JiraIssuesFilterState.Value.Residence), JiraIssuesFilterState.Value.Residence);
-            await LocalStorage.SetItemAsync(nameof(JiraIssuesFilterState.Value.HourRate), JiraIssuesFilterState.Value.HourRate);
-            await LocalStorage.SetItemAsync(nameof(JiraIssuesFilterState.Value.BonusInAdvance), JiraIssuesFilterState.Value.BonusInAdvance);
-            await LocalStorage.SetItemAsync(nameof(JiraIssuesFilterState.Value.OtherPayments), JiraIssuesFilterState.Value.OtherPayments);
-            await LocalStorage.SetItemAsync(nameof(JiraIssuesFilterState.Value.ReportedHours), JiraIssuesFilterState.Value.ReportedHours);
-            await LocalStorage.SetItemAsync(nameof(JiraIssuesFilterState.Value.SelectedCurrency), JiraIssuesFilterState.Value.SelectedCurrency);
-            await LocalStorage.SetItemAsync(nameof(JiraIssuesFilterState.Value.Language), JiraIssuesFilterState.Value.Language);
+            var filter = JiraIssuesFilterState.Value;
+            await Task.WhenAll(
+                LocalStorage.SetItemAsync(nameof(filter.Name), filter.Name).AsTask(),
+                LocalStorage.SetItemAsync(nameof(filter.ContractorId), filter.ContractorId).AsTask(),
+                LocalStorage.SetItemAsync(nameof(filter.TaxId), filter.TaxId).AsTask(),
+                LocalStorage.SetItemAsync(nameof(filter.Residence), filter.Residence).AsTask(),
+                LocalStorage.SetItemAsync(nameof(filter.HourRate), filter.HourRate).AsTask(),
+                LocalStorage.SetItemAsync(nameof(filter.BonusInAdvance), filter.BonusInAdvance).AsTask(),
+                LocalStorage.SetItemAsync(nameof(filter.OtherPayments), filter.OtherPayments).AsTask(),
+                LocalStorage.SetItemAsync(nameof(filter.ReportedHours), filter.ReportedHours).AsTask(),
+                LocalStorage.SetItemAsync(nameof(filter.SelectedCurrency), filter.SelectedCurrency).AsTask(),
+                LocalStorage.SetItemAsync(nameof(filter.Language), filter.Language).AsTask());
+
             Snackbar.Add("Values saved to Local Storage.", Severity.Success);
         }
 
         private async Task LoadFiltersFromLocalStorageAsync()
         {
-            var name = await LocalStorage.GetItemAsync<string>(nameof(JiraIssuesFilterState.Value.Name));
-            var contractorId = await LocalStorage.GetItemAsync<string>(nameof(JiraIssuesFilterState.Value.ContractorId));
-            var taxId = await LocalStorage.GetItemAsync<string>(nameof(JiraIssuesFilterState.Value.TaxId));
-            var residence = await LocalStorage.GetItemAsync<string>(nameof(JiraIssuesFilterState.Value.Residence));
-            var hourRate = await LocalStorage.GetItemAsync<decimal>(nameof(JiraIssuesFilterState.Value.HourRate));
-            var bonusInAdvance = await LocalStorage.GetItemAsync<decimal>(nameof(JiraIssuesFilterState.Value.BonusInAdvance));
-            var otherPayments = await LocalStorage.GetItemAsync<decimal>(nameof(JiraIssuesFilterState.Value.OtherPayments));
-            var reportedHours = await LocalStorage.GetItemAsync<decimal>(nameof(JiraIssuesFilterState.Value.ReportedHours));
-            var currency = await LocalStorage.GetItemAsync<string>(nameof(JiraIssuesFilterState.Value.SelectedCurrency));
-            var language = await LocalStorage.GetItemAsync<string>(nameof(JiraIssuesFilterState.Value.Language));
+            var filter = JiraIssuesFilterState.Value;
+            var nameTask = LocalStorage.GetItemAsync<string>(nameof(filter.Name)).AsTask();
+            var contractorIdTask = LocalStorage.GetItemAsync<string>(nameof(filter.ContractorId)).AsTask();
+            var taxIdTask = LocalStorage.GetItemAsync<string>(nameof(filter.TaxId)).AsTask();
+            var residenceTask = LocalStorage.GetItemAsync<string>(nameof(filter.Residence)).AsTask();
+            var hourRateTask = LocalStorage.GetItemAsync<decimal>(nameof(filter.HourRate)).AsTask();
+            var bonusInAdvanceTask = LocalStorage.GetItemAsync<decimal>(nameof(filter.BonusInAdvance)).AsTask();
+            var otherPaymentsTask = LocalStorage.GetItemAsync<decimal>(nameof(filter.OtherPayments)).AsTask();
+            var reportedHoursTask = LocalStorage.GetItemAsync<decimal>(nameof(filter.ReportedHours)).AsTask();
+            var currencyTask = LocalStorage.GetItemAsync<string>(nameof(filter.SelectedCurrency)).AsTask();
+            var languageTask = LocalStorage.GetItemAsync<string>(nameof(filter.Language)).AsTask();
+
+            await Task.WhenAll(
+                nameTask,
+                contractorIdTask,
+                taxIdTask,
+                residenceTask,
+                hourRateTask,
+                bonusInAdvanceTask,
+                otherPaymentsTask,
+                reportedHoursTask,
+                currencyTask,
+                languageTask);
 
             Dispatcher.Dispatch(new SetJiraIssuesFilterAction(
-                name ?? string.Empty,
-                contractorId ?? string.Empty,
-                taxId ?? string.Empty,
-                residence ?? string.Empty,
-                hourRate,
-                bonusInAdvance,
-                otherPayments,
-                currency ?? string.Empty,
-                reportedHours,
-                language ?? string.Empty));
+                nameTask.Result ?? string.Empty,
+                contractorIdTask.Result ?? string.Empty,
+                taxIdTask.Result ?? string.Empty,
+                residenceTask.Result ?? string.Empty,
+                hourRateTask.Result,
+                bonusInAdvanceTask.Result,
+                otherPaymentsTask.Result,
+                currencyTask.Result ?? string.Empty,
+                reportedHoursTask.Result,
+                languageTask.Result ?? string.Empty));
         }
 
         private void CalculateHourMultiplier()
@@ -164,28 +200,71 @@ namespace JiraReport.Client.Pages
             }
 
             var selectedIssues = JiraIssuesState.Value.SelectedIssues;
-            if (JiraIssuesFilterState.Value.HourRate <= 0 || selectedIssues == null || !selectedIssues.Any())
+            if (selectedIssues == null || selectedIssues.Count == 0)
             {
-                ExtraHours = [];
-                ExtraHoursDict = new();
-                StateHasChanged();
+                _selectedKeys = new();
+                _extraHoursDict = new();
+                _totalPaddedHours = 0m;
                 return;
             }
 
-            var totalHours = Math.Round(JiraIssuesFilterState.Value.TotalPrice / JiraIssuesFilterState.Value.HourRate, 2);
-            var selectedList = selectedIssues.ToList();
-
-            var buckets = HourRandomizer.SplitIntoBuckets((double)totalHours, selectedList.Select(x => (x.Key, x.TimeSpendInHours)));
-
-            var dict = new Dictionary<string, double>(buckets.Count);
-            foreach (var (key, hours) in buckets)
+            var selectedKeys = new HashSet<string>(selectedIssues.Count);
+            var weights = new List<(string key, decimal hours)>(selectedIssues.Count);
+            foreach (var issue in selectedIssues)
             {
-                dict[key] = hours;
+                selectedKeys.Add(issue.Key);
+                weights.Add((issue.Key, (decimal)issue.TimeSpendInHours));
+            }
+            _selectedKeys = selectedKeys;
+
+            if (JiraIssuesFilterState.Value.HourRate <= 0)
+            {
+                _extraHoursDict = new();
+                _totalPaddedHours = 0m;
+                return;
             }
 
-            ExtraHours = buckets;
-            ExtraHoursDict = dict;
-            StateHasChanged();
+            var totalHours = Math.Round(
+                JiraIssuesFilterState.Value.TotalPrice / JiraIssuesFilterState.Value.HourRate,
+                2,
+                MidpointRounding.AwayFromZero);
+
+            var buckets = HourRandomizer.SplitIntoBuckets(totalHours, weights);
+
+            var dict = new Dictionary<string, decimal>(buckets.Count);
+            decimal sumHours = 0m;
+            foreach (var (key, hours) in buckets)
+            {
+                if (dict.TryGetValue(key, out var existing))
+                {
+                    dict[key] = existing + hours;
+                }
+                else
+                {
+                    dict[key] = hours;
+                }
+                sumHours += hours;
+            }
+
+            _extraHoursDict = dict;
+            _totalPaddedHours = Math.Round(sumHours, 2, MidpointRounding.AwayFromZero);
+        }
+
+        private void BackupItem(object row)
+        {
+            if (row is JiraIssue jiraIssue)
+            {
+                _editBackup = (jiraIssue.TimeSpendInHours, jiraIssue.Checked);
+            }
+        }
+
+        private void ResetItemToOriginalValues(object row)
+        {
+            if (row is JiraIssue jiraIssue)
+            {
+                jiraIssue.TimeSpendInHours = _editBackup.TimeSpendInHours;
+                jiraIssue.Checked = _editBackup.Checked;
+            }
         }
 
         private void ItemHasBeenCommitted(object row)
@@ -225,12 +304,14 @@ namespace JiraReport.Client.Pages
         {
             Dispatcher.Dispatch(new JiraIssuesFilterSetDateRangeAction(dateRange));
 
-            if (!JiraIssuesState.Value.Loading && JiraIssuesState.Value.Initialized && (form?.IsValid ?? false))
+            if (!JiraIssuesState.Value.Loading
+                && JiraIssuesState.Value.Initialized
+                && (form?.IsValid ?? false)
+                && dateRange.Start.HasValue
+                && dateRange.End.HasValue)
             {
                 Dispatcher.Dispatch(new FetchJiraIssuesSetLoadingAction(true));
-                Dispatcher.Dispatch(new FetchJiraIssuesAction(
-                    JiraIssuesFilterState.Value.DateRange.Start.GetValueOrDefault(),
-                    JiraIssuesFilterState.Value.DateRange.End.GetValueOrDefault()));
+                Dispatcher.Dispatch(new FetchJiraIssuesAction(dateRange.Start.Value, dateRange.End.Value));
             }
         }
 

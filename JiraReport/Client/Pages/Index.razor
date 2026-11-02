@@ -15,7 +15,7 @@
     else if (JiraIssuesState.Value.Initialized)
     {
         <MudText Typo="Typo.h5" Class="mud-typography-align-center py-3">Workbench</MudText>
-        <MudTable Class="d-print-none" T="JiraIssue" RowEditCommit="ItemHasBeenCommitted" Items="JiraIssuesState.Value.Issues" Striped="false" Bordered="false" CustomFooter="true" Hover="true" MultiSelection="true" SelectedItemsChanged="SelectedItemsChanged" SelectedItems="JiraIssuesState.Value.SelectedIssues" CanCancelEdit="true">
+        <MudTable Class="d-print-none" T="JiraIssue" RowEditPreview="BackupItem" RowEditCancel="ResetItemToOriginalValues" RowEditCommit="ItemHasBeenCommitted" Items="JiraIssuesState.Value.Issues" Striped="false" Bordered="false" CustomFooter="true" Hover="true" MultiSelection="true" SelectedItemsChanged="SelectedItemsChanged" SelectedItems="JiraIssuesState.Value.SelectedIssues" CanCancelEdit="true">
             <HeaderContent>
                 <MudTh>Project</MudTh>
                 <MudTh>Key</MudTh>
@@ -29,30 +29,38 @@
                 <MudTh>Bonus</MudTh>
             </HeaderContent>
             <RowTemplate>
-                <MudTd DataLabel="Project" Class="@GetTdClass(context.Key)">@context.Project</MudTd>
-                <MudTd DataLabel="Key" Class="@GetTdClass(context.Key)"><MudLink Href="@context.Uri.OriginalString" Target="_blank"><b>@context.Key</b></MudLink></MudTd>
-                <MudTd DataLabel="Type" Class="@GetTdClass(context.Key)">@context.IssueType</MudTd>
-                <MudTd DataLabel="Summary" Class="@GetTdClass(context.Key)"><b>@context.Summary</b></MudTd>
-                <MudTd DataLabel="Status" Class="@GetTdClass(context.Key)">@context.Status</MudTd>
-                <MudTd DataLabel="Reporter" Class="@GetTdClass(context.Key)">@context.Reporter</MudTd>
-                <MudTd DataLabel="Hours" Class="@GetTdClass(context.Key)">@(context.TimeSpendInHours) h</MudTd>
-                <MudTd DataLabel="PaddedHours" Class="@GetTdClass(context.Key)">@(Math.Round(GetExtraHours(context.Key), 2)) h</MudTd>
-                <MudTd DataLabel="Price" Class="@GetTdClass(context.Key)">
-                    @JiraIssuesFilterState.Value.SelectedCurrency @(String.Format("{0:N2}", GetExtraHours(context.Key) * (double)JiraIssuesFilterState.Value.HourRate))
+                @{
+                    var tdClass = GetTdClass(context.Key);
+                    var isSelected = IsIssueSelected(context.Key);
+                }
+                <MudTd DataLabel="Project" Class="@tdClass">@context.Project</MudTd>
+                <MudTd DataLabel="Key" Class="@tdClass"><MudLink Href="@(context.Uri?.OriginalString)" Target="_blank"><b>@context.Key</b></MudLink></MudTd>
+                <MudTd DataLabel="Type" Class="@tdClass">@context.IssueType</MudTd>
+                <MudTd DataLabel="Summary" Class="@tdClass"><b>@context.Summary</b></MudTd>
+                <MudTd DataLabel="Status" Class="@tdClass">@context.Status</MudTd>
+                <MudTd DataLabel="Reporter" Class="@tdClass">@context.Reporter</MudTd>
+                <MudTd DataLabel="Hours" Class="@tdClass">@(context.TimeSpendInHours) h</MudTd>
+                <MudTd DataLabel="PaddedHours" Class="@tdClass">@(Math.Round(GetExtraHours(context.Key), 2)) h</MudTd>
+                <MudTd DataLabel="Price" Class="@tdClass">
+                    @JiraIssuesFilterState.Value.SelectedCurrency @(String.Format("{0:N2}", GetExtraPrice(context.Key)))
                 </MudTd>
-                <MudTd DataLabel="Bonus" Class="@GetTdClass(context.Key)"><MudCheckBox @bind-Value="@context.Checked" Disabled="@(!JiraIssuesState.Value.SelectedIssues.Any(x => x.Key == context.Key))" Color="Color.Primary" /></MudTd>
+                <MudTd DataLabel="Bonus" Class="@tdClass"><MudCheckBox @bind-Value="@context.Checked" Disabled="@(!isSelected)" Color="Color.Primary" /></MudTd>
             </RowTemplate>
             <RowEditingTemplate>
-                <MudTd DataLabel="Project" Class="@GetTdClass(context.Key)">@context.Project</MudTd>
-                <MudTd DataLabel="Key" Class="@GetTdClass(context.Key)"><MudLink Href="@context.Uri.OriginalString" Target="_blank">@context.Key</MudLink></MudTd>
-                <MudTd DataLabel="Type" Class="@GetTdClass(context.Key)">@context.IssueType</MudTd>
-                <MudTd DataLabel="Summary" Class="@GetTdClass(context.Key)">@context.Summary</MudTd>
-                <MudTd DataLabel="Status" Class="@GetTdClass(context.Key)">@context.Status</MudTd>
-                <MudTd DataLabel="Reporter" Class="@GetTdClass(context.Key)">@context.Reporter</MudTd>
-                <MudTd DataLabel="Hours" Class="@GetTdClass(context.Key)"><MudNumericField T="double" @bind-Value="context.TimeSpendInHours" Min="0" AdornmentText="h" Adornment="Adornment.End" /></MudTd>
-                <MudTd DataLabel="PaddedHours" Class="@GetTdClass(context.Key)">@(Math.Round(GetExtraHours(context.Key), 2)) h</MudTd>
-                <MudTd DataLabel="Price" Class="@GetTdClass(context.Key)">@JiraIssuesFilterState.Value.SelectedCurrency @(String.Format("{0:N2}", GetExtraHours(context.Key) * (double)JiraIssuesFilterState.Value.HourRate))</MudTd>
-                <MudTd DataLabel="Bonus"><MudCheckBox @bind-Value="@context.Checked" Disabled="@(!JiraIssuesState.Value.SelectedIssues.Any(x => x.Key == context.Key))" Color="Color.Primary" /></MudTd>
+                @{
+                    var tdClass = GetTdClass(context.Key);
+                    var isSelected = IsIssueSelected(context.Key);
+                }
+                <MudTd DataLabel="Project" Class="@tdClass">@context.Project</MudTd>
+                <MudTd DataLabel="Key" Class="@tdClass"><MudLink Href="@(context.Uri?.OriginalString)" Target="_blank">@context.Key</MudLink></MudTd>
+                <MudTd DataLabel="Type" Class="@tdClass">@context.IssueType</MudTd>
+                <MudTd DataLabel="Summary" Class="@tdClass">@context.Summary</MudTd>
+                <MudTd DataLabel="Status" Class="@tdClass">@context.Status</MudTd>
+                <MudTd DataLabel="Reporter" Class="@tdClass">@context.Reporter</MudTd>
+                <MudTd DataLabel="Hours" Class="@tdClass"><MudNumericField T="double" @bind-Value="context.TimeSpendInHours" Min="0" AdornmentText="h" Adornment="Adornment.End" /></MudTd>
+                <MudTd DataLabel="PaddedHours" Class="@tdClass">@(Math.Round(GetExtraHours(context.Key), 2)) h</MudTd>
+                <MudTd DataLabel="Price" Class="@tdClass">@JiraIssuesFilterState.Value.SelectedCurrency @(String.Format("{0:N2}", GetExtraPrice(context.Key)))</MudTd>
+                <MudTd DataLabel="Bonus"><MudCheckBox @bind-Value="@context.Checked" Disabled="@(!isSelected)" Color="Color.Primary" /></MudTd>
             </RowEditingTemplate>
             <FooterContent>
                 <MudTFootRow>
@@ -66,7 +74,7 @@
                     <MudTd><b>@(Math.Round(GetTotalPaddedHours(), 2))</b> h</MudTd>
                     <MudTd>
                         @JiraIssuesFilterState.Value.SelectedCurrency
-                        <b>@(String.Format("{0:N2}", GetTotalPaddedHours() * (double)JiraIssuesFilterState.Value.HourRate))</b>
+                        <b>@(String.Format("{0:N2}", GetTotalPrice()))</b>
                     </MudTd>
                     <MudTd><MudNumericField @bind-Value="JiraIssuesState.Value.BonusValue" Class="@GetBonusClass()" Format="N2" Label="Bonus" Variant="Variant.Text" Adornment="Adornment.Start" AdornmentText="@JiraIssuesFilterState.Value.SelectedCurrency" Min="0" /></MudTd>
                 </MudTFootRow>
@@ -183,13 +191,14 @@
 
                 @if (JiraIssuesState.Value.Initialized)
                 {
+                    var anyBonusChecked = JiraIssuesState.Value.SelectedIssues.Any(x => x.Checked);
                     <MudTable Breakpoint="Breakpoint.None" T="JiraIssue" Elevation="0" CustomFooter="true" Class="report-table mt-4" Items="JiraIssuesState.Value.SelectedIssues" Dense="true" Hover="true">
                         <HeaderContent>
                             <MudTh Class="report-table-cell">@(translation.OrderNumber)</MudTh>
                             <MudTh Class="report-table-cell">@(translation.OrderName)</MudTh>
                             <MudTh Class="report-table-cell">@(translation.TimeSpentOnOrder)</MudTh>
                             <MudTh Class="report-table-cell">@(translation.TotalCostOfOrder)</MudTh>
-                            @if (JiraIssuesState.Value.SelectedIssues.Any(x => x.Checked))
+                            @if (anyBonusChecked)
                             {
                                 <MudTh Class="report-table-cell">@(translation.Bonus)</MudTh>
                             }
@@ -200,9 +209,9 @@
                             <MudTd Class="report-table-cell" DataLabel="@(translation.TimeSpentOnOrder)">@(Math.Round(GetExtraHours(context.Key), 2)) h</MudTd>
                             <MudTd Class="report-table-cell" DataLabel="@(translation.TotalCostOfOrder)">
                                 @JiraIssuesFilterState.Value.SelectedCurrency
-                                @(String.Format("{0:N2}", GetExtraHours(context.Key) * (double)JiraIssuesFilterState.Value.HourRate))
+                                @(String.Format("{0:N2}", GetExtraPrice(context.Key)))
                             </MudTd>
-                            @if (JiraIssuesState.Value.SelectedIssues.Any(x => x.Checked))
+                            @if (anyBonusChecked)
                             {
                                 <MudTd Class="report-table-cell" DataLabel="@(translation.Bonus)">
                                     @if (context.Checked)
@@ -219,9 +228,9 @@
                                 <MudTd Class="report-table-cell"><b>@(Math.Round(GetTotalPaddedHours(), 2))</b> h</MudTd>
                                 <MudTd Class="report-table-cell">
                                     @JiraIssuesFilterState.Value.SelectedCurrency
-                                    <b>@(String.Format("{0:N2}", GetTotalPaddedHours() * (double)JiraIssuesFilterState.Value.HourRate))</b>
+                                    <b>@(String.Format("{0:N2}", GetTotalPrice()))</b>
                                 </MudTd>
-                                @if (JiraIssuesState.Value.SelectedIssues.Any(x => x.Checked))
+                                @if (anyBonusChecked)
                                 {
                                     <MudTd Class="report-table-cell">
                                         @JiraIssuesFilterState.Value.SelectedCurrency
