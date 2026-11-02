@@ -1,6 +1,6 @@
-﻿using System.Globalization;
+using System.Globalization;
 using Atlassian.Jira;
-using AutoMapper;
+using JiraReport.Server.Mappers;
 using JiraReport.Server.Options;
 using JiraReport.Shared;
 using Microsoft.AspNetCore.Mvc;
@@ -13,14 +13,12 @@ namespace JiraReport.Server.Controllers
 	public class JiraIssuesController : ControllerBase
 	{
 		private readonly IIssueService _issueService;
-		private readonly IMapper _mapper;
 		private readonly IOptionsMonitor<JiraConfigurationOptions> _jiraOptions;
 		private readonly ReportTranslationCollection _reportTranslationCollection;
 
-		public JiraIssuesController(IIssueService issueService, IMapper mapper, IOptionsMonitor<JiraConfigurationOptions> jiraOptions, ReportTranslationCollection reportTranslationCollection)
+		public JiraIssuesController(IIssueService issueService, IOptionsMonitor<JiraConfigurationOptions> jiraOptions, ReportTranslationCollection reportTranslationCollection)
 		{
 			_issueService = issueService;
-			_mapper = mapper;
 			_jiraOptions = jiraOptions;
 			_reportTranslationCollection = reportTranslationCollection;
 		}
@@ -50,7 +48,7 @@ namespace JiraReport.Server.Controllers
 					.Where(x => x.StartDate.HasValue && x.StartDate.Value.Date <= toDate)
 					.Sum(x => x.TimeSpentInSeconds);
 
-				var mappedIssue = _mapper.Map<JiraIssue>(issue);
+				var mappedIssue = issue.ToJiraIssue();
 				mappedIssue.TimeSpendInSeconds = secondsSpendSum;
 				mappedIssue.TimeSpend = TimeSpan.FromSeconds(secondsSpendSum);
 				mappedIssue.SetUri(_jiraOptions.CurrentValue.BaseUri);
@@ -58,7 +56,7 @@ namespace JiraReport.Server.Controllers
 				resultIssues.Add(mappedIssue);
 			}
 
-			return _mapper.Map<JiraIssueCollection>(resultIssues);
+			return resultIssues.ToCollection();
 		}
 
 		[HttpGet("translations")]
