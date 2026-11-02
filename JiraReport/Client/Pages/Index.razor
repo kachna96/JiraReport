@@ -122,7 +122,7 @@
     </MudItem>
 
     <MudItem xs="12" sm="7" Class="col-print-12">
-        <MudPaper Class="report-card pa-4 mud-height-full">
+        <MudPaper Class="pa-4 mud-height-full">
             @if (TranslationState.Value.Loading)
             {
                 <MudItem Class="d-flex justify-center xs-12 d-print-none">
@@ -136,103 +136,95 @@
                     ?? translations?.FirstOrDefault()
                     ?? GetDefaultTranslation();
 
-                <MudText Typo="Typo.h5" Class="mud-typography-align-center report-header-title"><b>@(translation.Headline)</b></MudText>
-
-                <div class="report-meta-box">
-                    <MudGrid Spacing="1">
-                        <MudItem xs="4" sm="3">
-                            <span class="report-meta-label">@(translation.Name):</span>
+                <MudText Typo="Typo.h5" Class="mud-typography-align-center"><b>@(translation.Headline)</b></MudText>
+                <MudGrid Class="mt-5">
+                    <MudItem xs="3" Class="py-1">
+                        <MudText>@(translation.Name):</MudText>
+                    </MudItem>
+                    <MudItem xs="9" Class="py-1">
+                        <MudText>@JiraIssuesFilterState.Value.Name</MudText>
+                    </MudItem>
+                    <MudItem xs="3" Class="py-1">
+                        <MudText>@(translation.ContractorId):</MudText>
+                    </MudItem>
+                    <MudItem xs="9" Class="py-1">
+                        <MudText>@JiraIssuesFilterState.Value.ContractorId</MudText>
+                    </MudItem>
+                    <MudItem xs="3" Class="py-1">
+                        <MudText>@(translation.TaxId):</MudText>
+                    </MudItem>
+                    <MudItem xs="9" Class="py-1">
+                        <MudText>@JiraIssuesFilterState.Value.TaxId</MudText>
+                    </MudItem>
+                    <MudItem xs="3" Class="py-1">
+                        <MudText>@(translation.Residence):</MudText>
+                    </MudItem>
+                    <MudItem xs="9" Class="py-1">
+                        <MudText>@JiraIssuesFilterState.Value.Residence</MudText>
+                    </MudItem>
+                    @if (JiraIssuesFilterState.Value.DateRange.Start.HasValue && JiraIssuesFilterState.Value.DateRange.End.HasValue)
+                    {
+                        <MudItem xs="3" Class="py-1">
+                            <MudText>@(translation.BillingPeriod):</MudText>
                         </MudItem>
-                        <MudItem xs="8" sm="9">
-                            <span class="report-meta-value">@JiraIssuesFilterState.Value.Name</span>
+                        <MudItem xs="9" Class="py-1">
+                            <MudText>
+                                @(JiraIssuesFilterState.Value.DateRange.Start.Value.Day).@(JiraIssuesFilterState.Value.DateRange.Start.Value.Month).@(JiraIssuesFilterState.Value.DateRange.Start.Value.Year)
+                                - @(JiraIssuesFilterState.Value.DateRange.End.Value.Day).@(JiraIssuesFilterState.Value.DateRange.End.Value.Month).@(JiraIssuesFilterState.Value.DateRange.End.Value.Year)
+                            </MudText>
                         </MudItem>
-
-                        <MudItem xs="4" sm="3">
-                            <span class="report-meta-label">@(translation.ContractorId):</span>
-                        </MudItem>
-                        <MudItem xs="8" sm="9">
-                            <span class="report-meta-value">@JiraIssuesFilterState.Value.ContractorId</span>
-                        </MudItem>
-
-                        <MudItem xs="4" sm="3">
-                            <span class="report-meta-label">@(translation.TaxId):</span>
-                        </MudItem>
-                        <MudItem xs="8" sm="9">
-                            <span class="report-meta-value">@JiraIssuesFilterState.Value.TaxId</span>
-                        </MudItem>
-
-                        <MudItem xs="4" sm="3">
-                            <span class="report-meta-label">@(translation.Residence):</span>
-                        </MudItem>
-                        <MudItem xs="8" sm="9">
-                            <span class="report-meta-value">@JiraIssuesFilterState.Value.Residence</span>
-                        </MudItem>
-
-                        @if (JiraIssuesFilterState.Value.DateRange.Start.HasValue && JiraIssuesFilterState.Value.DateRange.End.HasValue)
-                        {
-                            <MudItem xs="4" sm="3">
-                                <span class="report-meta-label">@(translation.BillingPeriod):</span>
-                            </MudItem>
-                            <MudItem xs="8" sm="9">
-                                <span class="report-meta-value">
-                                    @(JiraIssuesFilterState.Value.DateRange.Start.Value.ToString("dd.MM.yyyy")) - @(JiraIssuesFilterState.Value.DateRange.End.Value.ToString("dd.MM.yyyy"))
-                                </span>
-                            </MudItem>
-                        }
-
-                        <MudItem xs="4" sm="3">
-                            <span class="report-meta-label">@(translation.BillingPeriodHourRate):</span>
-                        </MudItem>
-                        <MudItem xs="8" sm="9">
-                            <span class="report-meta-value">@JiraIssuesFilterState.Value.HourRate @JiraIssuesFilterState.Value.SelectedCurrency/h</span>
-                        </MudItem>
-                    </MudGrid>
-                </div>
-
+                    }
+                    <MudItem xs="3" Class="py-1">
+                        <MudText>@(translation.BillingPeriodHourRate):</MudText>
+                    </MudItem>
+                    <MudItem xs="9" Class="py-1">
+                        <MudText>@JiraIssuesFilterState.Value.HourRate @JiraIssuesFilterState.Value.SelectedCurrency/h</MudText>
+                    </MudItem>
+                </MudGrid>
                 @if (JiraIssuesState.Value.Initialized)
                 {
                     var anyBonusChecked = JiraIssuesState.Value.SelectedIssues.Any(x => x.Checked);
-                    <MudTable Breakpoint="Breakpoint.None" T="JiraIssue" Elevation="0" CustomFooter="true" Class="report-table mt-4" Items="JiraIssuesState.Value.SelectedIssues" Dense="true" Hover="true">
+                    <MudTable Breakpoint="Breakpoint.None" T="JiraIssue" Elevation="0" CustomFooter="true" Class="mt-5" Items="JiraIssuesState.Value.SelectedIssues" Dense="true" Hover="true">
                         <HeaderContent>
-                            <MudTh Class="report-table-cell">@(translation.OrderNumber)</MudTh>
-                            <MudTh Class="report-table-cell">@(translation.OrderName)</MudTh>
-                            <MudTh Class="report-table-cell">@(translation.TimeSpentOnOrder)</MudTh>
-                            <MudTh Class="report-table-cell">@(translation.TotalCostOfOrder)</MudTh>
+                            <MudTh id="mud-table-dense-no-padding">@(translation.OrderNumber)</MudTh>
+                            <MudTh id="mud-table-dense-no-padding">@(translation.OrderName)</MudTh>
+                            <MudTh id="mud-table-dense-no-padding">@(translation.TimeSpentOnOrder)</MudTh>
+                            <MudTh id="mud-table-dense-no-padding">@(translation.TotalCostOfOrder)</MudTh>
                             @if (anyBonusChecked)
                             {
-                                <MudTh Class="report-table-cell">@(translation.Bonus)</MudTh>
+                                <MudTh id="mud-table-dense-no-padding">@(translation.Bonus)</MudTh>
                             }
                         </HeaderContent>
                         <RowTemplate>
-                            <MudTd Class="report-table-cell" DataLabel="@(translation.OrderNumber)"><b>@context.Key</b></MudTd>
-                            <MudTd Class="report-table-cell" DataLabel="@(translation.OrderName)">@context.Summary</MudTd>
-                            <MudTd Class="report-table-cell" DataLabel="@(translation.TimeSpentOnOrder)">@(Math.Round(GetExtraHours(context.Key), 2)) h</MudTd>
-                            <MudTd Class="report-table-cell" DataLabel="@(translation.TotalCostOfOrder)">
+                            <MudTd id="mud-table-dense-no-padding" DataLabel="@(translation.OrderNumber)">@context.Key</MudTd>
+                            <MudTd id="mud-table-dense-no-padding" DataLabel="@(translation.OrderName)">@context.Summary</MudTd>
+                            <MudTd id="mud-table-dense-no-padding" DataLabel="@(translation.TimeSpentOnOrder)">@(Math.Round(GetExtraHours(context.Key), 2)) h</MudTd>
+                            <MudTd id="mud-table-dense-no-padding" DataLabel="@(translation.TotalCostOfOrder)" Class="@GetTdClass(context.Key)">
                                 @JiraIssuesFilterState.Value.SelectedCurrency
                                 @(String.Format("{0:N2}", GetExtraPrice(context.Key)))
                             </MudTd>
                             @if (anyBonusChecked)
                             {
-                                <MudTd Class="report-table-cell" DataLabel="@(translation.Bonus)">
+                                <MudTd id="mud-table-dense-no-padding" DataLabel="@(translation.Bonus)">
                                     @if (context.Checked)
                                     {
-                                        <MudIcon Icon="@Icons.Material.Filled.Check" Color="Color.Primary" />
+                                        <MudIcon Icon="@Icons.Material.Filled.Check" />
                                     }
                                 </MudTd>
                             }
                         </RowTemplate>
                         <FooterContent>
                             <MudTFootRow>
-                                <MudTd Class="report-table-cell"><b>@(translation.Total)</b></MudTd>
-                                <MudTd Class="report-table-cell"></MudTd>
-                                <MudTd Class="report-table-cell"><b>@(Math.Round(GetTotalPaddedHours(), 2))</b> h</MudTd>
-                                <MudTd Class="report-table-cell">
+                                <MudTd id="mud-table-dense-no-padding"><b>@(translation.Total)</b></MudTd>
+                                <MudTd id="mud-table-dense-no-padding"></MudTd>
+                                <MudTd id="mud-table-dense-no-padding"><b>@(Math.Round(GetTotalPaddedHours(), 2))</b> h</MudTd>
+                                <MudTd id="mud-table-dense-no-padding">
                                     @JiraIssuesFilterState.Value.SelectedCurrency
                                     <b>@(String.Format("{0:N2}", GetTotalPrice()))</b>
                                 </MudTd>
                                 @if (anyBonusChecked)
                                 {
-                                    <MudTd Class="report-table-cell">
+                                    <MudTd id="mud-table-dense-no-padding">
                                         @JiraIssuesFilterState.Value.SelectedCurrency
                                         <b>@(String.Format("{0:N2}", JiraIssuesState.Value.BonusValue))</b>
                                     </MudTd>
@@ -241,9 +233,8 @@
                         </FooterContent>
                     </MudTable>
                 }
-
                 <div class="d-flex align-center justify-space-end mt-6 d-print-none">
-                    <MudButton Variant="Variant.Filled" Color="Color.Primary" Class="ml-auto d-print-none" OnClick="@PrintAsync" StartIcon="@Icons.Material.Filled.Print">Print</MudButton>
+                    <MudButton Variant="Variant.Filled" Color="Color.Primary" Class="ml-auto d-print-none" OnClick="@PrintAsync">Print</MudButton>
                 </div>
             }
         </MudPaper>
