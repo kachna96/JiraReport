@@ -1,4 +1,4 @@
-﻿using Fluxor;
+using Fluxor;
 using JiraReport.Client.Store.Exceptions;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Routing;
@@ -25,7 +25,7 @@ namespace JiraReport.Client.Shared
         {
             if (firstRender)
             {
-                _isDarkMode = await _mudThemeProvider.GetSystemPreference();
+                _isDarkMode = await _mudThemeProvider.GetSystemDarkModeAsync();
                 StateHasChanged();
             }
 

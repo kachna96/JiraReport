@@ -1,4 +1,4 @@
-﻿using Blazored.LocalStorage;
+using Blazored.LocalStorage;
 using Fluxor;
 using JiraReport.Client.Store.JiraIssues;
 using JiraReport.Client.Store.JiraIssuesFilter;
@@ -56,7 +56,7 @@ namespace JiraReport.Client.Pages
             if (firstValidation && JiraIssuesFilterState.Value.IsFilled())
             {
                 firstValidation = false;
-                form.Validate();
+                _ = form.ValidateAsync();
             }
 
             if (!JiraIssuesState.Value.Loading && JiraIssuesState.Value.Initialized)
