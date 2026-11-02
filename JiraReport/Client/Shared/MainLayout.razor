@@ -1,4 +1,4 @@
-﻿@inherits Fluxor.Blazor.Web.Components.FluxorLayout
+@inherits Fluxor.Blazor.Web.Components.FluxorLayout
 
 <MudThemeProvider @ref="@_mudThemeProvider" @bind-IsDarkMode="@_isDarkMode" />
 <MudPopoverProvider />
@@ -9,6 +9,8 @@
     <MudAppBar Elevation="1" Class="d-print-none">
         <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@((e) => DrawerToggle())" />
         <MudText Typo="Typo.h5" Class="ml-3">Jira Report</MudText>
+        <MudSpacer />
+        <MudIconButton Icon="@(_isDarkMode ? Icons.Material.Filled.LightMode : Icons.Material.Filled.DarkMode)" Color="Color.Inherit" Edge="Edge.End" OnClick="@DarkModeToggle" aria-label="@(_isDarkMode ? "Switch to Light Mode" : "Switch to Dark Mode")" />
     </MudAppBar>
     <MudDrawer @bind-Open="@_drawerOpen" ClipMode="DrawerClipMode.Always" Elevation="2" Class="d-print-none">
         <NavMenu />
