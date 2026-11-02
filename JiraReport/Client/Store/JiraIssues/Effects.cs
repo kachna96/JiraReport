@@ -1,4 +1,4 @@
-﻿using Fluxor;
+using Fluxor;
 using JiraReport.Client.Aspects;
 using JiraReport.Client.Store.Exceptions;
 using JiraReport.Shared;
@@ -19,12 +19,18 @@ namespace JiraReport.Client.Store.JiraIssues
         }
 
         [EffectMethod]
-        [ExceptionStateBind]
         public async Task HandleFetchDataAction(FetchJiraIssuesAction action, IDispatcher dispatcher)
         {
-            var issueCollection = await _httpClient.GetFromJsonAsync<JiraIssueCollection>(
-                $"api/jiraissues?from={action.From.ToString("yyyy/MM/dd", CultureInfo.InvariantCulture)}&to={action.To.ToString("yyyy/MM/dd", CultureInfo.InvariantCulture)}");
-            dispatcher.Dispatch(new FetchJiraIssuesResultAction(issueCollection));
+            try
+            {
+                var issueCollection = await _httpClient.GetFromJsonAsync<JiraIssueCollection>(
+                    $"api/jiraissues?from={action.From.ToString("yyyy/MM/dd", CultureInfo.InvariantCulture)}&to={action.To.ToString("yyyy/MM/dd", CultureInfo.InvariantCulture)}");
+                dispatcher.Dispatch(new FetchJiraIssuesResultAction(issueCollection));
+            }
+            catch (Exception ex)
+            {
+                Log(ex);
+            }
         }
 
         public void Log(Exception exception)

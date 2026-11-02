@@ -1,4 +1,4 @@
-﻿using Fluxor;
+using Fluxor;
 using JiraReport.Client.Aspects;
 using JiraReport.Client.Store.Exceptions;
 using JiraReport.Shared;
@@ -18,11 +18,17 @@ namespace JiraReport.Client.Store.Translations
 		}
 
 		[EffectMethod]
-		[ExceptionStateBind]
 		public async Task HandleFetchDataAction(FetchTranslationsAction _, IDispatcher dispatcher)
 		{
-			var issueCollection = await _httpClient.GetFromJsonAsync<ReportTranslationCollection>("api/jiraissues/translations");
-			dispatcher.Dispatch(new FetchTranslationsResultAction(issueCollection));
+			try
+			{
+				var issueCollection = await _httpClient.GetFromJsonAsync<ReportTranslationCollection>("api/jiraissues/translations");
+				dispatcher.Dispatch(new FetchTranslationsResultAction(issueCollection));
+			}
+			catch (Exception ex)
+			{
+				Log(ex);
+			}
 		}
 
 		public void Log(Exception exception)
