@@ -1,26 +1,28 @@
-﻿namespace JiraReport.Client
+namespace JiraReport.Client
 {
 	public static class HourRandomizer
 	{
 		public static List<(string key, double hours)> SplitIntoBuckets(double count, IEnumerable<(string key, double hours)> weights)
 		{
-			if (null == weights)
-				throw new ArgumentNullException(nameof(weights));
-			else if (!weights.Any())
-				throw new ArgumentOutOfRangeException(nameof(weights), "Empty weights");
+			ArgumentNullException.ThrowIfNull(weights);
 
-			var result = new List<(string key, double hours)>();
-
-			var sum = weights.Sum(x => x.hours);
-
-			if (sum == 0)
-				throw new ArgumentException("Weights must not sum to 0", nameof(weights));
-
-			for (var i = 0; i < weights.Count(); ++i)
+			var list = weights as IReadOnlyList<(string key, double hours)> ?? weights.ToList();
+			if (list.Count == 0)
 			{
-				var v = count * (weights.ElementAt(i).hours) / sum;
+				return [];
+			}
 
-				result.Add((weights.ElementAt(i).key, v));
+			var sum = list.Sum(x => x.hours);
+			if (sum <= 0)
+			{
+				return list.Select(x => (x.key, 0.0)).ToList();
+			}
+
+			var result = new List<(string key, double hours)>(list.Count);
+			foreach (var item in list)
+			{
+				var v = count * item.hours / sum;
+				result.Add((item.key, v));
 			}
 
 			return result;

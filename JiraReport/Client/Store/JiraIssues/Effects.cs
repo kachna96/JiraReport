@@ -25,11 +25,12 @@ namespace JiraReport.Client.Store.JiraIssues
             {
                 var issueCollection = await _httpClient.GetFromJsonAsync<JiraIssueCollection>(
                     $"api/jiraissues?from={action.From.ToString("yyyy/MM/dd", CultureInfo.InvariantCulture)}&to={action.To.ToString("yyyy/MM/dd", CultureInfo.InvariantCulture)}");
-                dispatcher.Dispatch(new FetchJiraIssuesResultAction(issueCollection));
+                dispatcher.Dispatch(new FetchJiraIssuesResultAction(issueCollection ?? new JiraIssueCollection { Issues = [] }));
             }
             catch (Exception ex)
             {
                 Log(ex);
+                dispatcher.Dispatch(new FetchJiraIssuesSetLoadingAction(false));
             }
         }
 

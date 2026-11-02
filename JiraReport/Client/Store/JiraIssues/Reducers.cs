@@ -1,4 +1,4 @@
-﻿using Fluxor;
+using Fluxor;
 
 namespace JiraReport.Client.Store.JiraIssues
 {
@@ -6,7 +6,7 @@ namespace JiraReport.Client.Store.JiraIssues
 	{
 		[ReducerMethod]
 		public static JiraIssuesState ReduceJiraIssuesResultAction(JiraIssuesState _, FetchJiraIssuesResultAction action) =>
-			new(action.IssueCollection.Issues, action.IssueCollection.TotalTimeSpendInSeconds, action.IssueCollection.TotalTime, loading: false);
+			new(action.IssueCollection.Issues ?? [], action.IssueCollection.TotalTimeSpendInSeconds, action.IssueCollection.TotalTime, loading: false);
 
 		[ReducerMethod]
 		public static JiraIssuesState ReduceSetLoadingAction(JiraIssuesState state, FetchJiraIssuesSetLoadingAction action) =>
@@ -26,13 +26,23 @@ namespace JiraReport.Client.Store.JiraIssues
 		public static JiraIssuesState ReduceSetJiraIssuesAction(JiraIssuesState state, JiraIssuesActionSetJiraIssues action)
 		{
 			var list = state.Issues.ToList();
-			var index = list.IndexOf(list.First(x => x.Key == action.JiraIssue.Key));
+			var index = list.FindIndex(x => x.Key == action.JiraIssue.Key);
+			if (index >= 0)
+			{
+				list[index] = action.JiraIssue;
+			}
 
-			list[index] = action.JiraIssue;
+			var selected = state.SelectedIssues.ToList();
+			var selectedIndex = selected.FindIndex(x => x.Key == action.JiraIssue.Key);
+			if (selectedIndex >= 0)
+			{
+				selected[selectedIndex] = action.JiraIssue;
+			}
 
 			return state with
 			{
-				Issues = list
+				Issues = list,
+				SelectedIssues = selected.ToHashSet()
 			};
 		}
 	}

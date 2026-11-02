@@ -22,12 +22,13 @@ namespace JiraReport.Client.Store.Translations
 		{
 			try
 			{
-				var issueCollection = await _httpClient.GetFromJsonAsync<ReportTranslationCollection>("api/jiraissues/translations");
-				dispatcher.Dispatch(new FetchTranslationsResultAction(issueCollection));
+				var translationCollection = await _httpClient.GetFromJsonAsync<ReportTranslationCollection>("api/jiraissues/translations");
+				dispatcher.Dispatch(new FetchTranslationsResultAction(translationCollection ?? new ReportTranslationCollection { Translations = [] }));
 			}
 			catch (Exception ex)
 			{
 				Log(ex);
+				dispatcher.Dispatch(new FetchTranslationsResultAction(new ReportTranslationCollection { Translations = [] }));
 			}
 		}
 

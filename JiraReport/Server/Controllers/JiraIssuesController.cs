@@ -25,45 +25,60 @@ namespace JiraReport.Server.Controllers
 
 		[HttpGet]
 		[ProducesResponseType(typeof(JiraIssueCollection), 200)]
-		public async Task<JiraIssueCollection> Get(string from, string to, CancellationToken cancellationToken = default)
+		[ProducesResponseType(typeof(string), 400)]
+		public async Task<ActionResult<JiraIssueCollection>> Get(string from, string to, CancellationToken cancellationToken = default)
 		{
 			if (!DateTime.TryParseExact(from, "yyyy/MM/dd", CultureInfo.InvariantCulture, DateTimeStyles.AdjustToUniversal, out DateTime fromDate) ||
 				!DateTime.TryParseExact(to, "yyyy/MM/dd", CultureInfo.InvariantCulture, DateTimeStyles.AdjustToUniversal, out DateTime toDate))
 			{
-				throw new ArgumentException("Date time is not in correct format");
+				return BadRequest("Date time is not in correct format. Expected format: yyyy/MM/dd");
 			}
 
-			var resultIssues = new List<JiraIssue>();
+			var username = _jiraOptions.CurrentValue.Username;
+			var baseUri = _jiraOptions.CurrentValue.BaseUri;
+
 			var issues = await _issueService.GetIssuesFromJqlAsync(
-				$"worklogAuthor = '{_jiraOptions.CurrentValue.Username}' and worklogDate >= '{fromDate.ToString("yyyy/MM/dd", CultureInfo.InvariantCulture)}' and worklogDate <= '{toDate.ToString("yyyy/MM/dd", CultureInfo.InvariantCulture)}'",
-				maxIssues: 100,
+				$"worklogAuthor = '{username}' and worklogDate >= '{fromDate.ToString("yyyy/MM/dd", CultureInfo.InvariantCulture)}' and worklogDate <= '{toDate.ToString("yyyy/MM/dd", CultureInfo.InvariantCulture)}'",
+				maxIssues: 500,
 				token: cancellationToken);
 
-			foreach (var issue in issues)
+			using var throttler = new SemaphoreSlim(8);
+			var tasks = issues.Select(async issue =>
 			{
-				var worklog = await issue.GetWorklogsAsync(cancellationToken);
-				var secondsSpendSum = worklog
-					.Where(x => x.Author == _jiraOptions.CurrentValue.Username)
-					.Where(x => x.StartDate.HasValue && x.StartDate.Value.Date >= fromDate)
-					.Where(x => x.StartDate.HasValue && x.StartDate.Value.Date <= toDate)
-					.Sum(x => x.TimeSpentInSeconds);
+				await throttler.WaitAsync(cancellationToken);
+				try
+				{
+					var worklog = await issue.GetWorklogsAsync(cancellationToken);
+					var secondsSpendSum = worklog
+						.Where(x => string.Equals(x.Author, username, StringComparison.OrdinalIgnoreCase))
+						.Where(x => x.StartDate.HasValue && x.StartDate.Value.Date >= fromDate.Date && x.StartDate.Value.Date <= toDate.Date)
+						.Sum(x => x.TimeSpentInSeconds);
 
-				var mappedIssue = issue.ToJiraIssue();
-				mappedIssue.TimeSpendInSeconds = secondsSpendSum;
-				mappedIssue.TimeSpend = TimeSpan.FromSeconds(secondsSpendSum);
-				mappedIssue.SetUri(_jiraOptions.CurrentValue.BaseUri);
+					var mappedIssue = issue.ToJiraIssue();
+					mappedIssue.TimeSpendInSeconds = secondsSpendSum;
+					mappedIssue.TimeSpend = TimeSpan.FromSeconds(secondsSpendSum);
+					if (baseUri != null)
+					{
+						mappedIssue.SetUri(baseUri);
+					}
 
-				resultIssues.Add(mappedIssue);
-			}
+					return mappedIssue;
+				}
+				finally
+				{
+					throttler.Release();
+				}
+			});
 
-			return resultIssues.ToCollection();
+			var resultIssues = await Task.WhenAll(tasks);
+			return Ok(resultIssues.ToCollection());
 		}
 
 		[HttpGet("translations")]
 		[ProducesResponseType(typeof(ReportTranslationCollection), 200)]
-		public ReportTranslationCollection GetTranslations()
+		public ActionResult<ReportTranslationCollection> GetTranslations()
 		{
-			return _reportTranslationCollection;
+			return Ok(_reportTranslationCollection);
 		}
 	}
 }

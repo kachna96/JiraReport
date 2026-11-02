@@ -1,4 +1,4 @@
-﻿using Fluxor;
+using Fluxor;
 using JiraReport.Shared;
 
 namespace JiraReport.Client.Store.Translations
@@ -6,15 +6,15 @@ namespace JiraReport.Client.Store.Translations
 	[FeatureState]
 	public record TranslationsState
 	{
-		public ReportTranslationCollection TranslationCollection { get; init; }
+		public ReportTranslationCollection? TranslationCollection { get; init; }
 
 		public bool Loading { get; init; } = true;
 
-		public bool Initialized => TranslationCollection.Translations.Any();
+		public bool Initialized => TranslationCollection?.Translations?.Any() == true;
 
 		private TranslationsState() { }
 
-		public TranslationsState(ReportTranslationCollection translationCollection)
+		public TranslationsState(ReportTranslationCollection? translationCollection)
 		{
 			TranslationCollection = translationCollection;
 		}

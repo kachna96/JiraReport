@@ -14,30 +14,31 @@ namespace JiraReport.Client.Pages
     {
         bool success = true;
         bool firstValidation = true;
-        MudForm form;
+        MudForm? form;
 
         private List<(string Key, double Hours)> ExtraHours { get; set; } = [];
+        private Dictionary<string, double> ExtraHoursDict { get; set; } = new();
 
         [Inject]
-        private IState<JiraIssuesState> JiraIssuesState { get; set; }
+        private IState<JiraIssuesState> JiraIssuesState { get; set; } = null!;
 
         [Inject]
-        private IState<JiraIssuesFilterState> JiraIssuesFilterState { get; set; }
+        private IState<JiraIssuesFilterState> JiraIssuesFilterState { get; set; } = null!;
 
         [Inject]
-        private IState<TranslationsState> TranslationState { get; set; }
+        private IState<TranslationsState> TranslationState { get; set; } = null!;
 
         [Inject]
-        private ILocalStorageService LocalStorage { get; set; }
+        private ILocalStorageService LocalStorage { get; set; } = null!;
 
         [Inject]
-        private IDispatcher Dispatcher { get; set; }
+        private IDispatcher Dispatcher { get; set; } = null!;
 
         [Inject]
-        private ISnackbar Snackbar { get; set; }
+        private ISnackbar Snackbar { get; set; } = null!;
 
         [Inject]
-        private IJSRuntime JSRuntime { get; set; }
+        private IJSRuntime JSRuntime { get; set; } = null!;
 
         protected override async Task OnInitializedAsync()
         {
@@ -53,7 +54,7 @@ namespace JiraReport.Client.Pages
 
         private void JiraIssuesFilterState_StateChanged(object? sender, EventArgs e)
         {
-            if (firstValidation && JiraIssuesFilterState.Value.IsFilled())
+            if (firstValidation && JiraIssuesFilterState.Value.IsFilled() && form != null)
             {
                 firstValidation = false;
                 _ = form.ValidateAsync();
@@ -76,7 +77,9 @@ namespace JiraReport.Client.Pages
         private void FetchJiraIssuesAsync()
         {
             Dispatcher.Dispatch(new FetchJiraIssuesSetLoadingAction(true));
-            Dispatcher.Dispatch(new FetchJiraIssuesAction(JiraIssuesFilterState.Value.DateRange.Start.GetValueOrDefault(), JiraIssuesFilterState.Value.DateRange.End.GetValueOrDefault()));
+            Dispatcher.Dispatch(new FetchJiraIssuesAction(
+                JiraIssuesFilterState.Value.DateRange.Start.GetValueOrDefault(),
+                JiraIssuesFilterState.Value.DateRange.End.GetValueOrDefault()));
         }
 
         private string GetTdClass(string key)
@@ -97,6 +100,19 @@ namespace JiraReport.Client.Pages
             }
 
             return "d-none";
+        }
+
+        public double GetExtraHours(string? key)
+        {
+            if (string.IsNullOrEmpty(key)) return 0;
+            return ExtraHoursDict.TryGetValue(key, out var hours) ? hours : 0;
+        }
+
+        public double GetTotalPaddedHours()
+        {
+            var selected = JiraIssuesState.Value.SelectedIssues;
+            if (selected == null || !selected.Any()) return 0;
+            return selected.Sum(x => GetExtraHours(x.Key));
         }
 
         private async Task SaveFiltersToLocalStorageAsync()
@@ -127,7 +143,17 @@ namespace JiraReport.Client.Pages
             var currency = await LocalStorage.GetItemAsync<string>(nameof(JiraIssuesFilterState.Value.SelectedCurrency));
             var language = await LocalStorage.GetItemAsync<string>(nameof(JiraIssuesFilterState.Value.Language));
 
-            Dispatcher.Dispatch(new SetJiraIssuesFilterAction(name!, contractorId!, taxId!, residence!, hourRate, bonusInAdvance, otherPayments, currency!, reportedHours, language));
+            Dispatcher.Dispatch(new SetJiraIssuesFilterAction(
+                name ?? string.Empty,
+                contractorId ?? string.Empty,
+                taxId ?? string.Empty,
+                residence ?? string.Empty,
+                hourRate,
+                bonusInAdvance,
+                otherPayments,
+                currency ?? string.Empty,
+                reportedHours,
+                language ?? string.Empty));
         }
 
         private void CalculateHourMultiplier()
@@ -137,26 +163,53 @@ namespace JiraReport.Client.Pages
                 return;
             }
 
-            ExtraHours = [];
-            var totalHours = Math.Round(JiraIssuesFilterState.Value.TotalPrice / JiraIssuesFilterState.Value.HourRate, 2);
-            var buckets = HourRandomizer.SplitIntoBuckets((double)totalHours, JiraIssuesState.Value.SelectedIssues.Select(x => (x.Key, x.TimeSpendInHours)));
-
-            double roundedHour = 0;
-
-            foreach (var (key, hours) in buckets)
+            var selectedIssues = JiraIssuesState.Value.SelectedIssues;
+            if (JiraIssuesFilterState.Value.HourRate <= 0 || selectedIssues == null || !selectedIssues.Any())
             {
-                if (key == buckets.Last().key)
+                ExtraHours = [];
+                ExtraHoursDict = new();
+                StateHasChanged();
+                return;
+            }
+
+            var totalHours = Math.Round(JiraIssuesFilterState.Value.TotalPrice / JiraIssuesFilterState.Value.HourRate, 2);
+            var selectedList = selectedIssues.ToList();
+            var totalLogged = selectedList.Sum(x => x.TimeSpendInHours);
+
+            if (totalLogged <= 0)
+            {
+                ExtraHours = selectedList.Select(x => (x.Key, 0.0)).ToList();
+                ExtraHoursDict = selectedList.ToDictionary(x => x.Key, _ => 0.0);
+                StateHasChanged();
+                return;
+            }
+
+            var buckets = HourRandomizer.SplitIntoBuckets((double)totalHours, selectedList.Select(x => (x.Key, x.TimeSpendInHours)));
+
+            var newExtraHours = new List<(string Key, double Hours)>(buckets.Count);
+            var dict = new Dictionary<string, double>(buckets.Count);
+            double accumulated = 0;
+
+            for (int i = 0; i < buckets.Count; i++)
+            {
+                var (key, hours) = buckets[i];
+                double roundedHour;
+                if (i == buckets.Count - 1)
                 {
-                    roundedHour = (double)totalHours - ExtraHours.Sum(x => x.Hours);
+                    roundedHour = (double)totalHours - accumulated;
                 }
                 else
                 {
                     roundedHour = hours;
+                    accumulated += roundedHour;
                 }
 
-                ExtraHours.Add(new(key, roundedHour));
+                newExtraHours.Add((key, roundedHour));
+                dict[key] = roundedHour;
             }
 
+            ExtraHours = newExtraHours;
+            ExtraHoursDict = dict;
             StateHasChanged();
         }
 
@@ -197,10 +250,12 @@ namespace JiraReport.Client.Pages
         {
             Dispatcher.Dispatch(new JiraIssuesFilterSetDateRangeAction(dateRange));
 
-            if (!JiraIssuesState.Value.Loading && JiraIssuesState.Value.Initialized && form.IsValid)
+            if (!JiraIssuesState.Value.Loading && JiraIssuesState.Value.Initialized && (form?.IsValid ?? false))
             {
                 Dispatcher.Dispatch(new FetchJiraIssuesSetLoadingAction(true));
-                Dispatcher.Dispatch(new FetchJiraIssuesAction(JiraIssuesFilterState.Value.DateRange.Start.GetValueOrDefault(), JiraIssuesFilterState.Value.DateRange.End.GetValueOrDefault()));
+                Dispatcher.Dispatch(new FetchJiraIssuesAction(
+                    JiraIssuesFilterState.Value.DateRange.Start.GetValueOrDefault(),
+                    JiraIssuesFilterState.Value.DateRange.End.GetValueOrDefault()));
             }
         }
 
@@ -208,6 +263,23 @@ namespace JiraReport.Client.Pages
         {
             await JSRuntime.InvokeVoidAsync("print");
         }
+
+        private static ReportTranslation GetDefaultTranslation() => new()
+        {
+            Headline = "Seznam objednávek",
+            Name = "Jméno dodavatele",
+            ContractorId = "IČO",
+            TaxId = "DIČ",
+            Residence = "Sídlo",
+            BillingPeriod = "Fakturované období",
+            BillingPeriodHourRate = "Smluvená sazba pro fakturované období",
+            OrderNumber = "Číslo objednávky",
+            OrderName = "Jméno objednávky",
+            TimeSpentOnOrder = "Čas strávený na objednávce",
+            TotalCostOfOrder = "Celková suma za danou objednávku",
+            Bonus = "Bonus",
+            Total = "Celkem"
+        };
 
         protected override async ValueTask DisposeAsyncCore(bool disposing)
         {
