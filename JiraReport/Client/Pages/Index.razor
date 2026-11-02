@@ -51,7 +51,7 @@
                 <MudTd DataLabel="Reporter" Class="@GetTdClass(context.Key)">@context.Reporter</MudTd>
                 <MudTd DataLabel="Hours" Class="@GetTdClass(context.Key)"><MudNumericField T="double" @bind-Value="context.TimeSpendInHours" Min="0" AdornmentText="h" Adornment="Adornment.End" /></MudTd>
                 <MudTd DataLabel="PaddedHours" Class="@GetTdClass(context.Key)">@(Math.Round(GetExtraHours(context.Key), 2)) h</MudTd>
-                <MudTd DataLabel="Price" Class="@GetTdClass(context.Key)">@JiraIssuesFilterState.Value.SelectedCurrency @(String.Format("{0:N2}", context.TimeSpendInHours * (double)JiraIssuesFilterState.Value.HourRate))</MudTd>
+                <MudTd DataLabel="Price" Class="@GetTdClass(context.Key)">@JiraIssuesFilterState.Value.SelectedCurrency @(String.Format("{0:N2}", GetExtraHours(context.Key) * (double)JiraIssuesFilterState.Value.HourRate))</MudTd>
                 <MudTd DataLabel="Bonus"><MudCheckBox @bind-Value="@context.Checked" Disabled="@(!JiraIssuesState.Value.SelectedIssues.Any(x => x.Key == context.Key))" Color="Color.Primary" /></MudTd>
             </RowEditingTemplate>
             <FooterContent>

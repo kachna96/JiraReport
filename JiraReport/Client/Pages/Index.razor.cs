@@ -112,7 +112,7 @@ namespace JiraReport.Client.Pages
         {
             var selected = JiraIssuesState.Value.SelectedIssues;
             if (selected == null || !selected.Any()) return 0;
-            return selected.Sum(x => GetExtraHours(x.Key));
+            return Math.Round(selected.Sum(x => GetExtraHours(x.Key)), 2);
         }
 
         private async Task SaveFiltersToLocalStorageAsync()
@@ -174,41 +174,16 @@ namespace JiraReport.Client.Pages
 
             var totalHours = Math.Round(JiraIssuesFilterState.Value.TotalPrice / JiraIssuesFilterState.Value.HourRate, 2);
             var selectedList = selectedIssues.ToList();
-            var totalLogged = selectedList.Sum(x => x.TimeSpendInHours);
-
-            if (totalLogged <= 0)
-            {
-                ExtraHours = selectedList.Select(x => (x.Key, 0.0)).ToList();
-                ExtraHoursDict = selectedList.ToDictionary(x => x.Key, _ => 0.0);
-                StateHasChanged();
-                return;
-            }
 
             var buckets = HourRandomizer.SplitIntoBuckets((double)totalHours, selectedList.Select(x => (x.Key, x.TimeSpendInHours)));
 
-            var newExtraHours = new List<(string Key, double Hours)>(buckets.Count);
             var dict = new Dictionary<string, double>(buckets.Count);
-            double accumulated = 0;
-
-            for (int i = 0; i < buckets.Count; i++)
+            foreach (var (key, hours) in buckets)
             {
-                var (key, hours) = buckets[i];
-                double roundedHour;
-                if (i == buckets.Count - 1)
-                {
-                    roundedHour = (double)totalHours - accumulated;
-                }
-                else
-                {
-                    roundedHour = hours;
-                    accumulated += roundedHour;
-                }
-
-                newExtraHours.Add((key, roundedHour));
-                dict[key] = roundedHour;
+                dict[key] = hours;
             }
 
-            ExtraHours = newExtraHours;
+            ExtraHours = buckets;
             ExtraHoursDict = dict;
             StateHasChanged();
         }
